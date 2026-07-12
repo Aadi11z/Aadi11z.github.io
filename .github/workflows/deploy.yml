@@ -33,12 +33,12 @@ jobs:
         run: npm run build
         env:
           PUBLIC_SITE_URL: https://aadi11z.github.io
-          PUBLIC_BASE_PATH: /website
+          PUBLIC_BASE_PATH: ''
       - name: Verify generated output
         run: npm run generated-check
         env:
           PUBLIC_SITE_URL: https://aadi11z.github.io
-          PUBLIC_BASE_PATH: /website
+          PUBLIC_BASE_PATH: ''
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:

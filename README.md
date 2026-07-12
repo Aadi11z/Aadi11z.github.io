@@ -52,23 +52,25 @@ The original phone-bearing CV is kept outside this repository at `/private/tmp/A
 Deployment is centralized in `astro.config.mjs` and `src/data/site.ts`:
 
 - `PUBLIC_SITE_URL` is the production origin, such as `https://aadi11z.github.io` or `https://portfolio.example.com`.
-- `PUBLIC_BASE_PATH` is the deployment subpath without a trailing slash. Leave it empty for a GitHub user site or custom domain; use `/website` for this repository as a GitHub project site.
+- `PUBLIC_BASE_PATH` is the deployment subpath without a trailing slash. It is empty for the intended GitHub user-site deployment.
 - Astro `site`, canonical URLs, Open Graph URLs, sitemap URLs, manifest URLs, resume URLs, and internal links all use these settings.
 - `.env.example` documents the two variables for local or hosted builds.
 
-### Current GitHub project-site configuration
+### Current GitHub user-site configuration
 
-The configured remote is `Aadi11z/website`, so `.github/workflows/deploy.yml` currently builds for:
+The intended production URL is:
 
 ```text
-https://aadi11z.github.io/website/
+https://aadi11z.github.io/
 ```
 
-The workflow uses `PUBLIC_SITE_URL=https://aadi11z.github.io` and `PUBLIC_BASE_PATH=/website`. Enable GitHub Pages with **GitHub Actions** as the source.
+The workflow uses `PUBLIC_SITE_URL=https://aadi11z.github.io` and an empty `PUBLIC_BASE_PATH`. Enable GitHub Pages with **GitHub Actions** as the source.
+
+GitHub user sites require the repository to be named exactly `Aadi11z.github.io`. Rename the current `Aadi11z/website` repository to `Aadi11z.github.io` in GitHub repository settings before expecting the root URL to serve this build. Until that rename, GitHub will continue treating the repository as a project site under `/website`.
 
 ### GitHub user site
 
-For a repository named `Aadi11z.github.io`, set `PUBLIC_BASE_PATH: ''` in the workflow. Keep `PUBLIC_SITE_URL: https://aadi11z.github.io`.
+The workflow is already configured for the user site: `PUBLIC_BASE_PATH: ''` and `PUBLIC_SITE_URL: https://aadi11z.github.io`.
 
 ### Custom domain
 
