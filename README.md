@@ -80,7 +80,7 @@ Use:
 
 - Build command: `npm run build`
 - Output directory: `dist`
-- Node version: 20 or newer
+- Node version: 24 (Astro 7 requires Node 22.12 or newer)
 
 Set both public environment variables to match the chosen origin and path. For a root deployment, use an empty `PUBLIC_BASE_PATH`.
 
