@@ -1,0 +1,38 @@
+---
+import type { Project } from '@/data/projects';
+import { withBase } from '@/data/site';
+import ProjectVisual from './ProjectVisual.astro';
+import Metric from './Metric.astro';
+
+interface Props { project: Project; index: number; }
+const { project, index } = Astro.props;
+---
+
+<article class="project-card">
+  <ProjectVisual type={project.visualType} label={project.category} />
+  <div class="project-content">
+    <div class="project-header">
+      <div>
+        <span class="project-number">0{index + 1}</span>
+        <h3>{project.title}</h3>
+      </div>
+      {project.dates && <span class="meta">{project.dates}</span>}
+    </div>
+    {project.subtitle && <p class="project-subtitle">{project.subtitle}</p>}
+    <p class="project-summary">{project.summary}</p>
+    <ul class="tag-list" aria-label={`${project.title} technologies`}>
+      {project.technologies.slice(0, 5).map((technology) => <li class="tag">{technology}</li>)}
+    </ul>
+    <div class="metric-list">
+      {project.metrics.slice(0, 2).map((metric) => <Metric value={metric} label="Result" />)}
+    </div>
+    <div class="project-footer">
+      <div class="project-links">
+        {project.sections && <a class="text-link" href={withBase(`/projects/${project.slug}/`)}>Case study</a>}
+        {project.liveUrl && <a class="text-link" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live site</a>}
+        {project.repositoryUrl && <a class="text-link" href={project.repositoryUrl} target="_blank" rel="noopener noreferrer">Repository</a>}
+      </div>
+      <span class="meta">{project.category}</span>
+    </div>
+  </div>
+</article>

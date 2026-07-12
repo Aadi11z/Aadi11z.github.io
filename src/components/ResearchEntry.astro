@@ -1,0 +1,25 @@
+---
+import type { ResearchEntryData } from '@/data/research';
+import { withBase } from '@/data/site';
+type Entry = ResearchEntryData;
+interface Props { entry: Entry; }
+const { entry } = Astro.props;
+---
+
+<article class="research-entry">
+  <div class="research-meta">
+    <strong>{entry.status}</strong>
+    <span class="meta">{entry.dates}</span>
+  </div>
+  <div>
+    <h3>{entry.title}</h3>
+    <ul class="tag-list" aria-label={`${entry.title} technologies`}>
+      {entry.technology.map((item) => <li class="tag">{item}</li>)}
+    </ul>
+    <p>{entry.abstract}</p>
+    <p><strong>Methods.</strong> {entry.methods}</p>
+    <p><strong>Evaluation.</strong> {entry.evaluation}</p>
+    <p class="result"><strong>Result.</strong> {entry.result}</p>
+    {entry.detailSlug && <a class="text-link research-link" href={withBase(`/projects/${entry.detailSlug}/`)}>Read the research brief</a>}
+  </div>
+</article>

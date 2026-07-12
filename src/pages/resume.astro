@@ -1,0 +1,18 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { withBase } from '@/data/site';
+---
+
+<BaseLayout title="Resume — Aaditya Bhatnagar" description="Resume and professional background for Aaditya Bhatnagar.">
+  <section class="resume-panel shell">
+    <div>
+      <span class="eyebrow">Resume</span>
+      <h1>Aaditya Bhatnagar</h1>
+      <p>The public résumé is available as a phone-redacted PDF. The original source CV is kept outside the deployable repository.</p>
+      <div class="button-row" style="justify-content: center; margin-top: 1.4rem;">
+        <a class="button button-primary" href={withBase('/Aaditya_Bhatnagar_Resume.pdf')} download>Download résumé <span aria-hidden="true">↓</span></a>
+        <a class="button" href={withBase('/')}>Back to home</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

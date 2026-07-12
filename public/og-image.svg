@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f6f5f1"/>
+  <path d="M0 500h1200M80 0v630" stroke="#dddeda"/>
+  <circle cx="920" cy="315" r="190" fill="none" stroke="#c9ccc9"/>
+  <circle cx="920" cy="315" r="135" fill="none" stroke="#2857d7" stroke-dasharray="5 10"/>
+  <circle cx="810" cy="180" r="7" fill="#2857d7"/>
+  <text x="80" y="122" fill="#2857d7" font-family="monospace" font-size="22" letter-spacing="3">AB / PORTFOLIO</text>
+  <text x="80" y="285" fill="#17191c" font-family="Georgia, serif" font-size="104" letter-spacing="-7">Aaditya</text>
+  <text x="80" y="390" fill="#17191c" font-family="Georgia, serif" font-size="104" letter-spacing="-7">Bhatnagar</text>
+  <text x="82" y="470" fill="#646a70" font-family="monospace" font-size="20">ML ENGINEER · DATA SCIENTIST · AI RESEARCHER</text>
+  <text x="82" y="560" fill="#646a70" font-family="monospace" font-size="18">DUBAI, UAE</text>
+</svg>

@@ -1,0 +1,82 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { profile } from '@/data/profile';
+import { siteConfig, withBase } from '@/data/site';
+import '@/styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  title = 'Aaditya Bhatnagar — ML Engineer, Data Scientist and AI Researcher',
+  description = 'Portfolio of Aaditya Bhatnagar, a Dubai-based computer science student building machine-learning systems, grounded AI products, quantitative research platforms, and machine-unlearning research.',
+  type = 'website',
+  noindex = false,
+} = Astro.props;
+const currentPath = Astro.url.pathname;
+const canonicalPath = siteConfig.basePath && (currentPath === siteConfig.basePath || currentPath.startsWith(`${siteConfig.basePath}/`))
+  ? currentPath
+  : withBase(currentPath);
+const canonical = new URL(canonicalPath, siteConfig.url).toString();
+const imageUrl = new URL(withBase('/og-image.svg'), siteConfig.url).toString();
+const siteRoot = new URL(withBase('/'), siteConfig.url).toString();
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  url: siteRoot,
+  email: `mailto:${profile.email}`,
+  jobTitle: 'ML Engineer and Data Scientist',
+  address: { '@type': 'PostalAddress', addressLocality: 'Dubai', addressCountry: 'AE' },
+  sameAs: Object.values(profile.links),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:alt" content="Aaditya Bhatnagar — AB monogram" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={withBase('/manifest.webmanifest')} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+    <script is:inline>
+      (() => {
+        try {
+          const saved = localStorage.getItem('theme');
+          const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <Header />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import { projects } from '@/data/projects';
+---
+
+<BaseLayout title="Projects — Aaditya Bhatnagar" description="Technical projects and research by Aaditya Bhatnagar across AI systems, machine learning, quantitative research, and data platforms.">
+  <section class="page-hero shell">
+    <span class="eyebrow">Archive</span>
+    <h1>Projects & research.</h1>
+    <p>A working archive of technical projects, research systems, and evaluation work. Each entry stays close to the available evidence and links only to supplied public resources.</p>
+    <p class="filter-note">Categories: AI systems · Machine learning · Research · Quantitative · Data platforms · Software engineering</p>
+  </section>
+  <section class="shell" aria-labelledby="archive-title">
+    <SectionHeading id="archive-title" index="All work" title="A closer look" description="Selected systems and research projects, presented with their context, methods, and reported results." />
+    <div class="archive-grid">
+      {projects.map((project, index) => <ProjectCard project={project} index={index} />)}
+    </div>
+  </section>
+</BaseLayout>

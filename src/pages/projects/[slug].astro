@@ -1,0 +1,20 @@
+---
+import ProjectLayout from '@/layouts/ProjectLayout.astro';
+import { detailProjects } from '@/data/projects';
+
+export function getStaticPaths() {
+  return detailProjects.map((project, index) => ({
+    params: { slug: project.slug },
+    props: {
+      project,
+      previous: detailProjects[index - 1],
+      next: detailProjects[index + 1],
+    },
+  }));
+}
+
+const { project, previous, next } = Astro.props;
+if (!project) return Astro.redirect('/404/');
+---
+
+<ProjectLayout project={project} previous={previous} next={next} />

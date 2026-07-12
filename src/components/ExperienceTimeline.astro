@@ -1,0 +1,30 @@
+---
+import { experience } from '@/data/experience';
+---
+
+<div class="experience-layout">
+  <div>
+    <span class="eyebrow">Professional experience</span>
+    <p class="lede">Production forecasting, automation, scenario analysis, and internal ML tooling for regional planning workflows.</p>
+  </div>
+  <div>
+    {experience.map((item) => (
+      <article class="experience-card">
+        <div class="experience-top">
+          <div><h3>{item.company}</h3><p>{item.role} · {item.location}</p></div>
+          <span class="meta">{item.dates}</span>
+        </div>
+        <p class="experience-summary">{item.summary}</p>
+        <ul class="experience-bullets">
+          {item.bullets.map((bullet) => <li>{bullet}</li>)}
+        </ul>
+        <div class="certification-row">
+          <span class="meta">Certifications</span>
+          <ul class="certification-list">
+            {item.certifications.map((certification) => <li>{certification}</li>)}
+          </ul>
+        </div>
+      </article>
+    ))}
+  </div>
+</div>
