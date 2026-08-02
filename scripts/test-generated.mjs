@@ -17,6 +17,7 @@ const required = [
   'Aaditya_Bhatnagar_Resume.pdf',
   'favicon.svg',
   'og-image.svg',
+  'og-image.png',
   'manifest.webmanifest',
   'robots.txt',
   'sitemap-index.xml',

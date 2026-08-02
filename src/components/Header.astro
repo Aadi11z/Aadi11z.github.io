@@ -14,7 +14,7 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
   <div class="shell header-inner">
     <a class="wordmark" href={homePath} aria-label={`${profile.name} home`}>
       <span class="wordmark-mark">{profile.monogram}</span>
-      <span class="wordmark-name">{profile.name}</span>
+      <span class="wordmark-name">{profile.name}<small>ML / Data / Systems</small></span>
     </a>
     <nav class="desktop-nav" aria-label="Primary navigation">
       <a class="nav-link" data-section-link="work" href={link('work')}>Work</a>
@@ -22,7 +22,7 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
       <a class="nav-link" data-section-link="experience" href={link('experience')}>Experience</a>
       <a class="nav-link" data-section-link="about" href={link('about')}>About</a>
       <a class="nav-link" data-section-link="contact" href={link('contact')}>Contact</a>
-      <a class="nav-link nav-resume" aria-current={onResume ? 'page' : undefined} href={resumePath}>Resume</a>
+      <a class="nav-link nav-resume" aria-current={onResume ? 'page' : undefined} href={resumePath}>Résumé <span aria-hidden="true">↗</span></a>
       <ThemeToggle />
     </nav>
     <div class="mobile-actions">
@@ -33,13 +33,16 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
       </button>
     </div>
   </div>
-  <nav class="mobile-nav shell" id="mobile-navigation" aria-label="Mobile navigation" data-mobile-nav data-open="false">
-    <a href={link('work')}>Work</a>
-    <a href={link('research')}>Research</a>
-    <a href={link('experience')}>Experience</a>
-    <a href={link('about')}>About</a>
-    <a href={link('contact')}>Contact</a>
-    <a class="mobile-resume" href={resumePath}>Resume</a>
+  <nav class="mobile-nav" id="mobile-navigation" aria-label="Mobile navigation" data-mobile-nav data-open="false">
+    <div class="shell mobile-nav-inner">
+      <span class="meta mobile-nav-label">Index / Navigate</span>
+      <a href={link('work')}><span>01</span>Work</a>
+      <a href={link('research')}><span>02</span>Research</a>
+      <a href={link('experience')}><span>03</span>Experience</a>
+      <a href={link('about')}><span>04</span>About</a>
+      <a href={link('contact')}><span>05</span>Contact</a>
+      <a class="mobile-resume" href={resumePath}><span>PDF</span>Résumé</a>
+    </div>
   </nav>
 </header>
 
@@ -67,6 +70,18 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
       event.preventDefault();
       setMenu(false);
     }
+    if (event.key === 'Tab' && mobileNav?.getAttribute('data-open') === 'true') {
+      const focusable = [menuButton, ...Array.from(mobileNav.querySelectorAll('a'))].filter((item): item is HTMLElement => item instanceof HTMLElement);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
   });
 
   const sectionLinks = document.querySelectorAll<HTMLElement>('[data-section-link]');
@@ -87,7 +102,7 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
 </script>
 
 <style>
-  .mobile-actions { display: none; align-items: center; }
+  .mobile-actions { display: none; align-items: center; gap: .25rem; }
   .menu-close { display: none; }
   [data-menu-toggle][aria-expanded='true'] .menu-open { display: none; }
   [data-menu-toggle][aria-expanded='true'] .menu-close { display: block; }

@@ -1,12 +1,12 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
 import ResearchEntry from '@/components/ResearchEntry.astro';
 import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
 import ContactSection from '@/components/ContactSection.astro';
-import SocialLinks from '@/components/SocialLinks.astro';
-import { profile, about, education, achievement } from '@/data/profile';
+import { about, education, achievement } from '@/data/profile';
 import { featuredProjects } from '@/data/projects';
 import { research } from '@/data/research';
 import { primaryTools, skillGroups } from '@/data/skills';
@@ -14,41 +14,22 @@ import { withBase } from '@/data/site';
 ---
 
 <BaseLayout>
-  <section class="hero shell" aria-labelledby="hero-title">
-    <div class="hero-grid">
-      <div>
-        <span class="status-line">{profile.location} · Graduating {profile.graduation}</span>
-        <h1 id="hero-title">Aaditya <span>Bhatnagar</span></h1>
-        <h2>{profile.headline}</h2>
-        <p class="hero-copy">{profile.description}</p>
-        <div class="button-row hero-actions">
-          <a class="button button-primary" href="#work">View selected work <span aria-hidden="true">↓</span></a>
-          <a class="button button-quiet" href={withBase('/resume/')}>Download résumé <span aria-hidden="true">↗</span></a>
-          <a class="button button-quiet" href={`mailto:${profile.email}`}>Email me <span aria-hidden="true">↗</span></a>
-        </div>
-        <SocialLinks />
-        <p class="availability">{profile.availability}</p>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-ring"></div>
-        <span class="hero-monogram">AB</span>
-        <span class="hero-coordinate meta">25.2048° N · 55.2708° E</span>
-      </div>
-    </div>
-  </section>
+  <Hero />
 
   <section class="section shell" id="work" aria-labelledby="work-title">
     <SectionHeading id="work-title" index="01 / Work" title="Selected Work" description="Research and engineering projects across grounded AI, machine learning, quantitative systems, and data platforms." />
     <div class="projects-grid">
       {featuredProjects.map((project, index) => <ProjectCard project={project} index={index} />)}
     </div>
-    <div style="margin-top: 1.8rem;"><a class="text-link" href={withBase('/projects/')}>View all projects</a></div>
+    <div class="section-action"><a class="text-link" href={withBase('/projects/')}>View all projects</a></div>
   </section>
 
-  <section class="section shell" id="research" aria-labelledby="research-title">
-    <SectionHeading id="research-title" index="02 / Research" title="Research" description="I’m interested in reliable machine learning, selective forgetting, robustness, and evaluation." />
-    <div class="research-list">
-      {research.map((entry) => <ResearchEntry entry={entry} />)}
+  <section class="section research-section" id="research" aria-labelledby="research-title">
+    <div class="shell">
+      <SectionHeading id="research-title" index="02 / Research" title="Research" description="I’m interested in reliable machine learning, selective forgetting, robustness, and evaluation." />
+      <div class="research-list">
+        {research.map((entry) => <ResearchEntry entry={entry} />)}
+      </div>
     </div>
   </section>
 
@@ -59,19 +40,19 @@ import { withBase } from '@/data/site';
 
   <section class="section shell" id="about" aria-labelledby="about-title">
     <SectionHeading id="about-title" index="04 / About" title="How I work" description="A practical interest in the full path from data and experiments to systems people can inspect and use." />
-    <div class="split-grid">
+    <div class="about-layout">
       <div class="about-copy">
         {about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
       </div>
-      <div class="principles">
-        {about.principles.map((principle) => <div class="principle"><h3>{principle.title}</h3><p>{principle.text}</p></div>)}
+      <div class="principles" aria-label="Working principles">
+        {about.principles.map((principle, index) => <div class="principle"><span class="meta">0{index + 1}</span><h3>{principle.title}</h3><p>{principle.text}</p></div>)}
       </div>
     </div>
   </section>
 
   <section class="section shell" aria-labelledby="education-title">
     <SectionHeading id="education-title" index="05 / Education" title="Education & achievement" description="Computer science foundations paired with research, statistics, and finance-oriented coursework." />
-    <div class="split-grid">
+    <div class="education-layout">
       <div class="education-card">
         <span class="eyebrow">Education</span>
         <h3>{education.institution}</h3>
@@ -81,7 +62,7 @@ import { withBase } from '@/data/site';
           {Object.entries(education.coursework).map(([group, courses]) => <div class="course-group"><h4>{group}</h4><p>{courses.join(' · ')}</p></div>)}
         </div>
       </div>
-      <div>
+      <div class="achievement-panel">
         <span class="eyebrow">Achievement</span>
         <div class="achievement"><h4>{achievement.title}</h4><p>{achievement.description}</p></div>
       </div>
@@ -91,7 +72,7 @@ import { withBase } from '@/data/site';
   <section class="section shell" aria-labelledby="skills-title">
     <SectionHeading id="skills-title" index="06 / Skills" title="Tools I use" description="A structured toolkit, with a small set of primary tools highlighted for quick scanning." />
     <div class="skills-layout">
-      <div><span class="eyebrow">Primary tools</span><div class="primary-tools">{primaryTools.map((tool) => <span class="primary-tool">{tool}</span>)}</div></div>
+      <div class="skills-intro"><span class="eyebrow">Primary tools</span><div class="primary-tools">{primaryTools.map((tool) => <span class="primary-tool">{tool}</span>)}</div></div>
       <div class="skill-groups">{skillGroups.map((group) => <div class="skill-group"><h3>{group.name}</h3><p>{group.items.join(' · ')}</p></div>)}</div>
     </div>
   </section>

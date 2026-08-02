@@ -7,13 +7,15 @@ import { projects } from '@/data/projects';
 
 <BaseLayout title="Projects — Aaditya Bhatnagar" description="Technical projects and research by Aaditya Bhatnagar across AI systems, machine learning, quantitative research, and data platforms.">
   <section class="page-hero shell">
-    <span class="eyebrow">Archive</span>
-    <h1>Projects & research.</h1>
-    <p>A working archive of technical projects, research systems, and evaluation work. Each entry stays close to the available evidence and links only to supplied public resources.</p>
-    <p class="filter-note">Categories: AI systems · Machine learning · Research · Quantitative · Data platforms · Software engineering</p>
+    <div class="page-hero-index"><span class="eyebrow">Project archive</span><span class="meta">{String(projects.length).padStart(2, '0')} records / Selected work</span></div>
+    <h1>Systems, experiments<br />and research.</h1>
+    <div class="page-hero-copy">
+      <p>A working archive of technical projects, research systems, and evaluation work. Each entry stays close to the available evidence and links only to supplied public resources.</p>
+      <p class="filter-note">AI systems · Machine learning · Research · Quantitative · Data platforms · Software engineering</p>
+    </div>
   </section>
   <section class="shell" aria-labelledby="archive-title">
-    <SectionHeading id="archive-title" index="All work" title="A closer look" description="Selected systems and research projects, presented with their context, methods, and reported results." />
+    <SectionHeading id="archive-title" index="Index / All work" title="The archive" description="Selected systems and research projects, presented with their context, methods, and reported results." />
     <div class="archive-grid">
       {projects.map((project, index) => <ProjectCard project={project} index={index} />)}
     </div>

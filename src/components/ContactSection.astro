@@ -4,13 +4,19 @@ import { profile } from '@/data/profile';
 
 <section class="contact-section" id="contact">
   <div class="shell">
-    <span class="eyebrow">Contact</span>
-    <h2>Let’s build something useful.</h2>
-    <p>I’m currently preparing for graduate roles in machine learning, data science, AI research, quantitative research, and software engineering. I’m always interested in thoughtful technical work, research collaborations, and conversations about reliable AI and data-driven systems.</p>
-    <div class="contact-links">
-      <a class="button button-primary" href={`mailto:${profile.email}`}>Email Aaditya <span aria-hidden="true">↗</span></a>
-      <a class="text-link" href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a class="text-link" href={profile.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+    <div class="contact-grid">
+      <div>
+        <span class="eyebrow">07 / Contact</span>
+        <h2>Let’s build<br />something <em>useful.</em></h2>
+      </div>
+      <div class="contact-copy">
+        <p>I’m currently preparing for graduate roles in machine learning, data science, AI research, quantitative research, and software engineering. I’m always interested in thoughtful technical work, research collaborations, and conversations about reliable AI and data-driven systems.</p>
+        <a class="contact-email" href={`mailto:${profile.email}`}>{profile.email}<span aria-hidden="true">↗</span></a>
+        <div class="contact-links">
+          <a class="text-link" href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a class="text-link" href={profile.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+        </div>
+      </div>
     </div>
   </div>
 </section>

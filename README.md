@@ -45,7 +45,7 @@ To add or update a project, edit `src/data/projects.ts`. Add a `sections` array 
 
 ## Resume privacy
 
-The original phone-bearing CV is kept outside this repository at `/private/tmp/Aaditya_Bhatnagar_CV.pdf` and is not part of the deployable artifact. The public file is `public/Aaditya_Bhatnagar_Resume.pdf`: a visually redacted, rasterized copy named professionally for download. The rasterization prevents the removed phone field from being recovered from the PDF text layer. To replace it, update only the public PDF and verify that `pdftotext` cannot recover the private number.
+The original phone-bearing CV is intentionally not stored in this repository or any deployment path. The public file is `public/Aaditya_Bhatnagar_Resume.pdf`: a visually redacted, rasterized copy named professionally for download. The rasterization prevents the removed phone field from being recovered from the PDF text layer. To replace it, work from a private source outside the repository, update only the public PDF, and verify that `pdftotext` or OCR cannot recover the private number.
 
 ## Deployment configuration
 

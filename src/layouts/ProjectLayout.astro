@@ -21,45 +21,47 @@ const projectSchema = {
 <BaseLayout title={title} description={description} type="article">
   <script is:inline type="application/ld+json" set:html={JSON.stringify(projectSchema)} />
   <section class="detail-hero shell">
-    <span class="eyebrow">{project.category}</span>
-    <h1>{project.title}</h1>
-    {project.subtitle && <p class="detail-subtitle">{project.subtitle}</p>}
-    <p class="detail-summary">{project.longDescription}</p>
-    <div class="detail-meta">
-      {project.role && <div class="detail-meta-item"><span>Role</span><span>{project.role}</span></div>}
+    <a class="detail-back" href={withBase('/projects/')}><span aria-hidden="true">←</span> Project archive</a>
+    <div class="detail-hero-grid">
+      <div class="detail-intro">
+        <span class="eyebrow">Case study / {project.category}</span>
+        <h1>{project.title}</h1>
+        {project.subtitle && <p class="detail-subtitle">{project.subtitle}</p>}
+        <p class="detail-summary">{project.longDescription}</p>
+      </div>
+      <ProjectVisual type={project.visualType} label={project.category} />
+    </div>
+    <div class:list={['detail-meta', !project.role && !project.dates && 'detail-meta-single']} aria-label="Project metadata">
+      {project.role && <div class="detail-meta-item"><span>{project.category === 'Research' ? 'Status' : 'Role'}</span><span>{project.role}</span></div>}
       {project.dates && <div class="detail-meta-item"><span>Date</span><span>{project.dates}</span></div>}
-      <div class="detail-meta-item"><span>Technology</span><span>{project.technologies.slice(0, 5).join(' · ')}</span></div>
+      <div class="detail-meta-item detail-meta-wide"><span>Technology</span><span>{project.technologies.join(' · ')}</span></div>
     </div>
   </section>
   <div class="detail-layout shell">
     <aside class="detail-aside">
-      <ProjectVisual type={project.visualType} label={project.category} />
-      <ul class="tag-list" aria-label={`${project.title} technologies`}>
-        {project.technologies.map((technology) => <li class="tag">{technology}</li>)}
-      </ul>
-      <div class="project-links" style="margin-top: 1rem;">
+      <span class="eyebrow">Reported signals</span>
+      <div class="detail-results">
+        {project.metrics.map((metric, index) => <div class="detail-result"><span>0{index + 1}</span>{metric}</div>)}
+      </div>
+      {(project.liveUrl || project.repositoryUrl || project.reportUrl) && <div class="detail-links">
+        <span class="eyebrow">Links</span>
         {project.liveUrl && <a class="text-link" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live site</a>}
         {project.repositoryUrl && <a class="text-link" href={project.repositoryUrl} target="_blank" rel="noopener noreferrer">Repository</a>}
         {project.reportUrl && <a class="text-link" href={project.reportUrl} target="_blank" rel="noopener noreferrer">Report</a>}
-      </div>
+      </div>}
     </aside>
     <article class="detail-body">
-      {(project.sections ?? []).map((section) => (
+      {(project.sections ?? []).map((section, index) => (
         <section class="detail-section">
+          <span class="detail-section-index meta">0{index + 1}</span>
           <h2>{section.title}</h2>
           <p>{section.body}</p>
           {section.items && <ul>{section.items.map((item) => <li>{item}</li>)}</ul>}
         </section>
       ))}
-      <section class="detail-section">
-        <h2>Reported results</h2>
-        <div class="detail-results">
-          {project.metrics.map((metric) => <div class="detail-result">{metric}</div>)}
-        </div>
-      </section>
       <nav class="detail-nav" aria-label="Project navigation">
-        {previous ? <a href={withBase(`/projects/${previous.slug}/`)}><small>Previous project</small><strong>← {previous.title}</strong></a> : <span></span>}
-        {next ? <a href={withBase(`/projects/${next.slug}/`)}><small>Next project</small><strong>{next.title} →</strong></a> : <a href={withBase('/projects/')}><small>Archive</small><strong>All projects →</strong></a>}
+        {previous ? <a href={withBase(`/projects/${previous.slug}/`)}><small>Previous case</small><strong>← {previous.title}</strong></a> : <span></span>}
+        {next ? <a href={withBase(`/projects/${next.slug}/`)}><small>Next case</small><strong>{next.title} →</strong></a> : <a href={withBase('/projects/')}><small>Project index</small><strong>All projects →</strong></a>}
       </nav>
     </article>
   </div>

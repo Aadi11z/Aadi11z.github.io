@@ -8,6 +8,7 @@
   const updateLabel = () => {
     const dark = document.documentElement.dataset.theme === 'dark';
     buttons.forEach((button) => button.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme'));
+    document.querySelector('[data-theme-color]')?.setAttribute('content', dark ? '#0e1218' : '#f2f0e9');
   };
   buttons.forEach((button) => button.addEventListener('click', () => {
     const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
