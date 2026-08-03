@@ -29,6 +29,7 @@ const projects = readFileSync('src/data/projects.ts', 'utf8');
 const profile = readFileSync('src/data/profile.ts', 'utf8');
 const explorer = readFileSync('src/data/playgrounds/unlearning.ts', 'utf8');
 const sectionDeck = readFileSync('src/scripts/section-deck.ts', 'utf8');
+const heroVisual = readFileSync('src/components/visuals/HeroVisual.astro', 'utf8');
 const forbidden = ['example.com', 'your-repo', 'placeholder', 'lorem ipsum'];
 for (const value of forbidden) {
   if (projects.toLowerCase().includes(value)) throw new Error(`Placeholder content found: ${value}`);
@@ -46,6 +47,9 @@ if (!explorer.includes("provenance: 'measured'")) throw new Error('Explorer data
 if (/membershipInference:\s*[0-9]/.test(explorer)) throw new Error('Unsupported membership-inference metric was introduced.');
 for (const behavior of ['pushState', 'popstate', 'hashchange', 'aria-current']) {
   if (!sectionDeck.includes(behavior)) throw new Error(`Section deck is missing ${behavior} behavior.`);
+}
+for (const behavior of ['data-typing-station', 'data-typed-name', "dataset.motion === 'reduced'", 'motionchange']) {
+  if (!heroVisual.includes(behavior)) throw new Error(`Hero typing animation is missing ${behavior} behavior.`);
 }
 
 console.log(`Content checks passed: ${requiredFiles.length} required files, ${requiredSlugs.length} projects, and ${requiredCategories.length} categories verified.`);

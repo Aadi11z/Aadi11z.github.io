@@ -92,6 +92,9 @@ for (const section of ['overview', 'work', 'research', 'experience', 'about', 'c
   }
 }
 if ((homeHtml.match(/<(?:div|section)\b[^>]*\bdata-deck-panel\b/g) ?? []).length !== 6) throw new Error('Homepage must render exactly six section panels');
+if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('aria-label="Aaditya Bhatnagar"') || !homeHtml.includes('data-typed-name')) {
+  throw new Error('Accessible hero typing station is missing');
+}
 
 for (const explorerPage of ['lab/index.html', 'projects/machine-unlearning-vision-language-models/index.html']) {
   const html = readFileSync(join(dist, explorerPage), 'utf8');

@@ -72,7 +72,7 @@ html.deck-ready #contact .contact-section {
 
 .hero {
   min-height: calc(100svh - var(--header-height));
-  padding-block: clamp(2rem, 5vw, 4.5rem) 1.2rem;
+  padding-block: clamp(1.4rem, 3.5vw, 3rem) 1.2rem;
 }
 
 .hero-rule {
@@ -90,13 +90,23 @@ html.deck-ready #contact .contact-section {
 
 .hero-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(390px, .92fr);
-  gap: clamp(2.5rem, 7vw, 7rem);
-  align-items: center;
-  padding-block: clamp(3rem, 7vw, 6.5rem);
+  grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+  padding-block: clamp(1.5rem, 3vw, 2.8rem);
+  border-bottom: 1px solid var(--rule);
 }
 
 .hero-main {
+  min-width: 0;
+}
+
+.hero-main .eyebrow {
+  display: block;
+  margin-bottom: .75rem;
+}
+
+.hero-support {
   min-width: 0;
 }
 
@@ -113,28 +123,14 @@ html.deck-ready #contact .contact-section {
   font-size: .52rem;
 }
 
-.hero h1 {
-  margin: 0 0 1.55rem;
-  font-size: clamp(4.2rem, 8.5vw, 8.6rem);
-  font-weight: 670;
-  line-height: .76;
-  letter-spacing: -.095em;
-}
-
-.hero h1 em {
-  color: var(--cobalt-strong);
-  font-family: var(--font-serif);
-  font-weight: 400;
-}
-
 .hero-headline {
   max-width: 48rem;
-  margin-bottom: 1rem;
+  margin: 0;
   color: var(--ink);
-  font-size: clamp(1.35rem, 2.45vw, 2.05rem);
+  font-size: clamp(1.55rem, 3vw, 2.65rem);
   font-weight: 560;
-  line-height: 1.17;
-  letter-spacing: -.035em;
+  line-height: 1.08;
+  letter-spacing: -.05em;
 }
 
 .hero-copy {
@@ -175,99 +171,190 @@ html.deck-ready #contact .contact-section {
   color: var(--ink);
 }
 
-.hero-visual {
+.typing-station {
+  position: relative;
   min-width: 0;
-  margin: 0;
+  margin-top: clamp(1.25rem, 3vw, 2.5rem);
   overflow: hidden;
-  background: var(--paper-raised);
+  border-color: var(--night-rule-strong);
+  background: var(--night);
+  color: var(--night-ink);
   box-shadow: 12px 12px 0 var(--cobalt-wash);
 }
 
-.hero-visual::before {
+.typing-station::before {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--cobalt) 8%, transparent), transparent 40%);
+  background:
+    linear-gradient(110deg, transparent 0 72%, color-mix(in srgb, var(--night-accent) 9%, transparent) 72% 73%, transparent 73%),
+    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--night-accent) 13%, transparent), transparent 31%);
   content: '';
   pointer-events: none;
 }
 
-.hero-visual-label,
-.hero-visual-caption {
+.typing-station-label,
+.typing-station-caption {
   position: relative;
   z-index: 1;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: .75rem 1rem;
 }
 
-.hero-visual-label {
-  border-bottom: 1px solid var(--rule);
-  color: var(--ink-faint);
+.typing-station-label {
+  border-bottom: 1px solid var(--night-rule-soft);
+  color: var(--night-faint);
 }
 
-.hero-visual svg {
-  width: 100%;
-  height: auto;
-  color: var(--ink);
+.typing-replay {
+  display: none;
+  min-height: 32px;
+  padding: .25rem .6rem;
+  border: 1px solid var(--night-rule);
+  background: transparent;
+  color: var(--night-muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: .61rem;
+  text-transform: uppercase;
 }
 
-.hero-visual-caption {
+.typing-station[data-enhanced='true'] .typing-replay {
+  display: inline-flex;
+  align-items: center;
+}
+
+.typing-replay:hover,
+.typing-replay:focus-visible {
+  border-color: var(--night-accent);
+  color: var(--night-ink);
+}
+
+.typing-display {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: clamp(125px, 15vw, 190px);
+  align-content: center;
+  padding: clamp(1.15rem, 3vw, 2.2rem);
+  border-bottom: 1px solid var(--night-rule-soft);
+}
+
+.typing-command {
+  margin-bottom: .65rem;
+  color: var(--night-accent);
+}
+
+.typing-name {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  margin: 0;
+  color: var(--night-ink);
+  font-family: var(--font-mono);
+  font-size: clamp(1.7rem, 7.8vw, 5.8rem);
+  font-weight: 650;
+  line-height: .95;
+  letter-spacing: -.075em;
+  white-space: nowrap;
+}
+
+.typing-prompt {
+  margin-right: .22em;
+  color: var(--night-accent-strong);
+  font-size: .68em;
+}
+
+.typing-cursor {
+  width: .08em;
+  height: .84em;
+  margin-left: .12em;
+  background: var(--night-accent-strong);
+  opacity: 0;
+}
+
+.typing-station[data-typing-state='typing'] .typing-cursor {
+  opacity: 1;
+  animation: typing-cursor 620ms steps(1, end) infinite;
+}
+
+.typing-readout {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: .8rem;
+  color: var(--night-faint);
+}
+
+.keyboard {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: clamp(.22rem, .55vw, .45rem);
+  padding: clamp(.8rem, 2vw, 1.4rem);
+  background: color-mix(in srgb, var(--night-raised) 82%, transparent);
+}
+
+.keyboard-row {
+  display: flex;
+  gap: clamp(.22rem, .55vw, .45rem);
+}
+
+.keyboard-key {
+  display: grid;
+  flex: 1 1 0;
+  min-width: 0;
+  height: clamp(24px, 3.4vw, 42px);
+  place-items: center;
+  border: 1px solid var(--night-rule);
+  background: var(--night-surface);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--night-rule-strong) 68%, transparent);
+  color: var(--night-muted);
+  font-family: var(--font-mono);
+  font-size: clamp(.42rem, .65vw, .62rem);
+  line-height: 1;
+  text-transform: uppercase;
+  transition: transform 80ms ease, border-color 80ms ease, background-color 80ms ease, color 80ms ease, box-shadow 80ms ease;
+}
+
+.keyboard-key-wide {
+  flex-grow: 1.55;
+}
+
+.keyboard-key-wider {
+  flex-grow: 2.05;
+}
+
+.keyboard-key-space {
+  flex-grow: 8;
+}
+
+.keyboard-key.is-pressed {
+  border-color: var(--night-accent-strong);
+  background: color-mix(in srgb, var(--night-accent-strong) 34%, var(--night-surface));
+  box-shadow: 0 1px 0 var(--night-accent);
+  color: var(--night-ink);
+  transform: translateY(2px);
+}
+
+.typing-station-caption {
   justify-content: flex-start;
-  border-top: 1px solid var(--rule);
-  color: var(--ink-muted);
-  font-size: .78rem;
+  border-top: 1px solid var(--night-rule-soft);
+  color: var(--night-muted);
+  font-size: .76rem;
 }
 
-.visual-grid {
-  stroke: currentColor;
-  stroke-width: 1;
-  opacity: .12;
+.typing-station-caption > .meta {
+  margin-left: auto;
+  color: var(--night-faint);
 }
 
-.hero-orbit,
-.hero-profile,
-.hero-face-line,
-.hero-eye {
-  fill: none;
-  stroke: currentColor;
-}
-
-.hero-orbit {
-  stroke-dasharray: 4 9;
-  opacity: .28;
-}
-
-.hero-profile {
-  fill: color-mix(in srgb, var(--cobalt-wash) 40%, transparent);
-  stroke-width: 2;
-}
-
-.hero-face-line,
-.hero-eye {
-  stroke-width: 2;
-}
-
-.hero-eye-node,
-.hero-links circle {
-  fill: var(--cobalt);
-}
-
-.hero-links path {
-  stroke: var(--cobalt);
-  stroke-dasharray: 3 7;
-  opacity: .66;
-}
-
-.hero-callout {
-  fill: var(--ink-muted);
-  font-size: 10px;
-}
-
-.hero-signal {
-  fill: none;
-  stroke: var(--cobalt);
-  stroke-width: 3;
+@keyframes typing-cursor {
+  50% {
+    opacity: 0;
+  }
 }
 
 .hero-footnote {
@@ -719,7 +806,7 @@ html.deck-ready #contact .contact-section {
 
 @media (max-width: 1020px) {
   .hero-layout {
-    grid-template-columns: minmax(0, 1.1fr) minmax(330px, .9fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
     gap: 3rem;
   }
 
@@ -755,11 +842,6 @@ html.deck-ready #contact .contact-section {
   .capabilities-layout,
   .contact-grid {
     grid-template-columns: 1fr;
-  }
-
-  .hero-visual {
-    width: min(100%, 620px);
-    justify-self: center;
   }
 
   .positioning-index {
@@ -800,16 +882,31 @@ html.deck-ready #contact .contact-section {
     display: none;
   }
 
-  .hero h1 {
-    font-size: clamp(3.8rem, 19vw, 5.7rem);
-  }
-
   .hero-headline {
     font-size: clamp(1.35rem, 7vw, 1.9rem);
   }
 
-  .hero-visual-label span:last-child {
+  .typing-readout span:last-child,
+  .typing-station-caption > .meta {
     display: none;
+  }
+
+  .typing-display {
+    min-height: 115px;
+  }
+
+  .typing-name {
+    font-size: clamp(1.4rem, 6.8vw, 1.9rem);
+    letter-spacing: -.08em;
+  }
+
+  .typing-station-caption {
+    font-size: .68rem;
+  }
+
+  .keyboard-key {
+    height: clamp(22px, 7vw, 30px);
+    font-size: .38rem;
   }
 
   .hero-actions .button {

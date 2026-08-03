@@ -7,14 +7,20 @@ import HeroVisual from './visuals/HeroVisual.astro';
 
 <section class="hero shell" aria-labelledby="hero-title">
   <div class="hero-rule" aria-hidden="true">
-    <span>Editorial Manga Lab / Portfolio</span>
-    <span>Dubai / United Arab Emirates</span>
+    <span>Portfolio / Identity sequence</span>
+    <span>Dubai / 2026</span>
   </div>
-  <div class="hero-layout">
-    <div class="hero-main" data-reveal>
+
+  <div class="hero-stage">
+    <HeroVisual />
+
+    <div class="hero-layout">
+      <div class="hero-main" data-reveal>
+        <span class="eyebrow">ML / Data / Systems</span>
+        <p class="hero-headline">{profile.headline}</p>
+      </div>
+      <div class="hero-support" data-reveal>
       <p class="status-line"><span aria-hidden="true">●</span> {profile.location} · Graduating {profile.graduation}</p>
-      <h1 id="hero-title">Aaditya<br /><em>Bhatnagar</em></h1>
-      <p class="hero-headline">{profile.headline}</p>
       <p class="hero-copy">{profile.description}</p>
       <div class="button-row hero-actions">
         <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">→</span></a>
@@ -22,9 +28,10 @@ import HeroVisual from './visuals/HeroVisual.astro';
         <a class="button button-quiet" href={`mailto:${profile.email}`}>Email <span aria-hidden="true">↗</span></a>
       </div>
       <SocialLinks />
+      </div>
     </div>
-    <HeroVisual />
   </div>
+
   <div class="hero-footnote">
     <span class="availability-dot" aria-hidden="true"></span>
     <p>{profile.availability}</p>
