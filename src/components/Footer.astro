@@ -1,5 +1,6 @@
 ---
 import { profile } from '@/data/profile';
+import { withBase } from '@/data/site';
 ---
 
 <footer class="site-footer">
@@ -12,6 +13,7 @@ import { profile } from '@/data/profile';
       <a href={profile.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href={`mailto:${profile.email}`}>Email</a>
+      <a href={withBase('/lab/')}>Lab</a>
     </nav>
     <span class="footer-stack">Built with Astro + TypeScript</span>
   </div>

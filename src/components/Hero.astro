@@ -2,51 +2,32 @@
 import { profile } from '@/data/profile';
 import { withBase } from '@/data/site';
 import SocialLinks from './SocialLinks.astro';
+import HeroVisual from './visuals/HeroVisual.astro';
 ---
 
 <section class="hero shell" aria-labelledby="hero-title">
   <div class="hero-rule" aria-hidden="true">
-    <span>Portfolio / Selected work</span>
+    <span>Editorial Manga Lab / Portfolio</span>
     <span>Dubai / United Arab Emirates</span>
   </div>
-
   <div class="hero-layout">
-    <div class="hero-main">
-      <p class="status-line">{profile.location} · Graduating {profile.graduation}</p>
-      <h1 id="hero-title">{profile.name}</h1>
+    <div class="hero-main" data-reveal>
+      <p class="status-line"><span aria-hidden="true">●</span> {profile.location} · Graduating {profile.graduation}</p>
+      <h1 id="hero-title">Aaditya<br /><em>Bhatnagar</em></h1>
       <p class="hero-headline">{profile.headline}</p>
       <p class="hero-copy">{profile.description}</p>
-
       <div class="button-row hero-actions">
         <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">↓</span></a>
         <a class="button button-quiet" href={withBase('/resume/')}>Résumé <span aria-hidden="true">↗</span></a>
         <a class="button button-quiet" href={`mailto:${profile.email}`}>Email <span aria-hidden="true">↗</span></a>
       </div>
-
       <SocialLinks />
     </div>
-
-    <aside class="hero-index" aria-label="Areas of work">
-      <div class="hero-index-heading">
-        <span class="meta">Working across</span>
-        <span class="hero-index-mark" aria-hidden="true">AB</span>
-      </div>
-      <ol class="hero-index-list">
-        <li><span>01</span><strong>Production ML</strong><small>Forecasting · evaluation</small></li>
-        <li><span>02</span><strong>Reliable AI</strong><small>Grounding · unlearning</small></li>
-        <li><span>03</span><strong>Quant systems</strong><small>Energy · markets</small></li>
-        <li><span>04</span><strong>Data platforms</strong><small>APIs · infrastructure</small></li>
-      </ol>
-      <svg class="hero-index-plot" viewBox="0 0 460 118" fill="none" aria-hidden="true">
-        <path d="M1 96H459M1 67H459M1 38H459M53 1v116M154 1v116M255 1v116M356 1v116" />
-        <path class="plot-signal" d="M2 92c36-2 44-26 76-24 36 2 42 17 74 6 30-10 39-48 72-43 34 5 43 39 80 28 34-10 41-37 75-29 31 7 40 26 80 3" />
-        <circle class="plot-point" cx="224" cy="31" r="5" />
-      </svg>
-    </aside>
+    <HeroVisual />
   </div>
-
   <div class="hero-footnote">
     <span class="availability-dot" aria-hidden="true"></span>
     <p>{profile.availability}</p>
+    <span class="meta">SCROLL / 01</span>
   </div>
 </section>

@@ -1,0 +1,33 @@
+---
+import { about, achievement, education } from '@/data/profile';
+---
+
+<section class="positioning section shell" id="about" aria-labelledby="positioning-title">
+  <div class="positioning-grid">
+    <div class="positioning-index" data-reveal>
+      <span class="eyebrow">00 / Position</span>
+      <span class="positioning-monogram" aria-hidden="true">AB</span>
+      <p class="meta">Machine learning<br />Data science<br />Software systems</p>
+    </div>
+    <div class="positioning-copy" data-reveal>
+      <h2 id="positioning-title">I work where models, data, and software systems meet.</h2>
+      {about.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+    </div>
+    <aside class="credentials-ledger" aria-label="Education and achievement" data-reveal>
+      <div class="credential-row">
+        <span class="meta">Education</span>
+        <strong>{education.institution}</strong>
+        <span>{education.degree}</span>
+      </div>
+      <div class="credential-pair">
+        <div><span class="meta">CGPA</span><strong>{education.cgpa}</strong></div>
+        <div><span class="meta">Expected</span><strong>{education.expectedGraduation}</strong></div>
+      </div>
+      <div class="credential-row credential-achievement">
+        <span class="meta">Selected achievement</span>
+        <strong>{achievement.title}</strong>
+        <span>{achievement.description}</span>
+      </div>
+    </aside>
+  </div>
+</section>

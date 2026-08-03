@@ -1,27 +1,29 @@
 ---
 import type { ResearchEntryData } from '@/data/research';
 import { withBase } from '@/data/site';
-type Entry = ResearchEntryData;
-interface Props { entry: Entry; }
-const { entry } = Astro.props;
+interface Props { entry: ResearchEntryData; index: number; }
+const { entry, index } = Astro.props;
 ---
 
-<article class="research-entry">
-  <div class="research-meta">
-    <strong>{entry.status}</strong>
+<article class="research-note" data-reveal>
+  <header class="research-note-header">
+    <div><span class="research-status">{entry.status}</span><span class="meta">Note / 0{index + 1}</span></div>
     <span class="meta">{entry.dates}</span>
-  </div>
-  <div class="research-content">
-    <h3>{entry.title}</h3>
-    <ul class="tag-list" aria-label={`${entry.title} technologies`}>
-      {entry.technology.map((item) => <li class="tag">{item}</li>)}
-    </ul>
-    <p class="research-abstract">{entry.abstract}</p>
-    <div class="research-notes">
-      <p><strong>Methods</strong><span>{entry.methods}</span></p>
-      <p><strong>Evaluation</strong><span>{entry.evaluation}</span></p>
+  </header>
+  <div class="research-note-grid">
+    <div class="research-title-block">
+      <h3>{entry.title}</h3>
+      <ul class="tag-list" aria-label={`${entry.title} technologies`}>{entry.technology.map((item) => <li class="tag">{item}</li>)}</ul>
     </div>
-    <p class="result"><strong>Result</strong><span>{entry.result}</span></p>
-    {entry.detailSlug && <a class="text-link research-link" href={withBase(`/projects/${entry.detailSlug}/`)}>Read the research brief</a>}
+    <div class="research-question"><span class="annotation">Research question</span><p>{entry.question}</p></div>
+    <dl class="research-fields">
+      <div><dt>Motivation</dt><dd>{entry.motivation}</dd></div>
+      <div><dt>Methods</dt><dd>{entry.methods}</dd></div>
+      <div><dt>Evaluation</dt><dd>{entry.evaluation}</dd></div>
+      <div class="research-result"><dt>Current finding</dt><dd>{entry.result}</dd></div>
+      <div><dt>Limitations</dt><dd>{entry.limitations}</dd></div>
+      <div><dt>Open question</dt><dd>{entry.openQuestion}</dd></div>
+    </dl>
+    {entry.detailSlug && <a class="text-link research-link" href={withBase(`/projects/${entry.detailSlug}/`)}>Open research brief</a>}
   </div>
 </article>

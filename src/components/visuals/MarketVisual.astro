@@ -1,0 +1,12 @@
+---
+interface Props { mode: 'nrg' | 'qnt'; }
+const { mode } = Astro.props;
+---
+<svg viewBox="0 0 480 300" fill="none" aria-hidden="true">
+  <path class="visual-grid" d="M42 48v208h397M42 100h397M42 152h397M42 204h397M121 48v208M200 48v208M279 48v208M358 48v208" />
+  {mode === 'qnt' && <g class="regime-bands"><rect x="82" y="49" width="82" height="206"/><rect x="282" y="49" width="106" height="206"/></g>}
+  <path class="visual-ink" d={mode === 'nrg' ? 'M42 205c31-54 48 11 76-31 27-41 45-31 72-67 29-38 48 26 73-5 28-34 48 18 78-15 32-35 62-24 98-69' : 'M42 214c34-48 61-20 88-54 26-32 46-7 74-44 34-44 56 32 89-1 35-37 53 22 88-10 25-22 41-17 58-41'} />
+  <path class="visual-accent draw-path" pathLength="1" d={mode === 'nrg' ? 'M42 174c36 12 62-21 91 11 33 35 49 4 80 22 35 20 65-23 97 4 35 29 67-12 96 2 16 8 23 3 33-3' : 'M42 228c35-27 60-8 88-32 28-25 50-9 74-23 31-20 59 15 89-8 35-28 55 0 88-12 24-9 41-5 58-4'} />
+  <circle class="visual-node-accent" cx={mode === 'nrg' ? '263' : '293'} cy={mode === 'nrg' ? '102' : '115'} r="6" />
+  <g class="visual-labels"><text x="42" y="279">T−N</text><text x="397" y="279">T</text><text x="310" y="35">{mode === 'nrg' ? 'FORECAST' : 'REGIME'}</text></g>
+</svg>
