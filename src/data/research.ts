@@ -1,5 +1,3 @@
-import { projectBySlug } from './projects';
-
 export type ResearchEntryData = {
   title: string;
   dates: string;
@@ -44,5 +42,3 @@ export const research: ResearchEntryData[] = [
     openQuestion: 'How consistently do bounded activations generalize across model architectures and perturbation levels?',
   },
 ] as const;
-
-export const unlearningProject = projectBySlug('machine-unlearning-vision-language-models');

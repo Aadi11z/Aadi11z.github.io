@@ -187,4 +187,3 @@ export const projects: Project[] = [
 
 export const featuredProjects = projects.filter((project) => project.featured);
 export const detailProjects = projects.filter((project) => project.detail);
-export const projectBySlug = (slug: string) => projects.find((project) => project.slug === slug);

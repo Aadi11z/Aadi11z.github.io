@@ -1,14 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#f2f0e9"/>
-  <rect x="0" y="0" width="56" height="630" fill="#3156d9"/>
-  <path d="M106 72h1018M106 554h1018" stroke="#b9b8b2"/>
-  <path d="M788 72v482M898 72v482M1008 72v482" stroke="#d7d5ce"/>
-  <path d="M765 452c57-3 75-95 128-75 50 19 64 72 116 31 44-35 64-118 115-92" fill="none" stroke="#3156d9" stroke-width="4"/>
-  <circle cx="893" cy="377" r="9" fill="#3156d9"/>
-  <text x="106" y="126" fill="#3156d9" font-family="monospace" font-size="19" letter-spacing="3">AB / TECHNICAL PORTFOLIO</text>
-  <text x="106" y="286" fill="#141820" font-family="Arial, sans-serif" font-size="94" font-weight="600" letter-spacing="-6">Aaditya</text>
-  <text x="106" y="380" fill="#141820" font-family="Arial, sans-serif" font-size="94" font-weight="600" letter-spacing="-6">Bhatnagar</text>
-  <text x="110" y="458" fill="#626872" font-family="Arial, sans-serif" font-size="26">Reliable AI · Research tools · Quantitative platforms</text>
-  <text x="106" y="590" fill="#626872" font-family="monospace" font-size="17" letter-spacing="1">DUBAI, UAE  /  ML ENGINEERING + DATA SCIENCE</text>
-  <text x="1060" y="126" fill="#3156d9" font-family="Arial, sans-serif" font-size="42" font-weight="700" letter-spacing="-4">AB</text>
+  <defs>
+    <pattern id="dots" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#101620"/><circle cx="2" cy="2" r="1" fill="#ffffff" opacity=".14"/></pattern>
+    <clipPath id="panel"><path d="M748 72h377l35 35v450H748Z"/></clipPath>
+  </defs>
+  <rect width="1200" height="630" fill="#f4f0e7"/>
+  <rect width="58" height="630" fill="#2f55d4"/>
+  <path d="M106 72h1019M106 557h1019" stroke="#8e8a82"/>
+  <path d="M748 72h377l35 35v450H748Z" fill="#101620" stroke="#8e8a82"/>
+  <rect x="748" y="72" width="412" height="485" fill="url(#dots)" clip-path="url(#panel)"/>
+  <path d="M1125 72v35h35" fill="none" stroke="#8e8a82"/>
+  <g fill="#2f55d4" font-family="Arial, Helvetica, sans-serif">
+    <text x="106" y="126" font-size="20">AB / EDITORIAL MANGA LAB</text>
+    <text x="1083" y="126" font-size="42" text-anchor="end">AB</text>
+  </g>
+  <g fill="#151821" font-family="Arial, Helvetica, sans-serif">
+    <text x="104" y="280" font-size="92" font-weight="650">Aaditya</text>
+    <text x="104" y="374" font-size="92" font-weight="650">Bhatnagar</text>
+    <text x="108" y="433" font-size="27" fill="#5f6470">Reliable AI · Research tools · Quantitative platforms</text>
+    <text x="106" y="592" font-size="17" fill="#5f6470" font-family="monospace">DUBAI, UAE  /  ML ENGINEERING + DATA SCIENCE</text>
+  </g>
+  <g fill="none" stroke="#151821">
+    <path d="M902 152c72-31 147 16 158 87 8 50-13 84-44 107-16 12-21 30-22 52l-2 84H865l6-105c1-24-7-40-26-55-34-27-48-64-36-100 12-36 46-61 93-70Z" fill="#dde5ff" stroke-width="2"/>
+    <path d="M1004 211c-24 8-37 26-35 49 2 17 14 25 10 38-4 13-16 22-28 27 17 9 38 9 53 0" stroke-width="2"/>
+    <path d="M970 261c11-8 23-8 34 0-12 8-23 8-34 0Z" stroke-width="2"/>
+  </g>
+  <circle cx="987" cy="261" r="5" fill="#2f55d4"/>
+  <g stroke="#2f55d4" stroke-dasharray="4 8"><path d="m987 261 111-82"/><path d="m987 261 113 115"/><path d="m987 261-126 170"/></g>
+  <g fill="#2f55d4"><circle cx="1098" cy="179" r="7"/><circle cx="1100" cy="376" r="7"/><circle cx="861" cy="431" r="7"/></g>
+  <g fill="#5f6470" font-family="monospace" font-size="12"><text x="1040" y="165">EVIDENCE</text><text x="1044" y="401">MODELS</text><text x="775" y="454">SYSTEMS</text></g>
+  <path d="M775 510c34-10 55-42 84-31 31 12 47 31 76 12 32-21 42-53 74-43 31 10 45 35 84 5" fill="none" stroke="#2f55d4" stroke-width="4"/>
 </svg>

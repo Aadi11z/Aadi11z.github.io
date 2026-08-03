@@ -44,7 +44,7 @@ const nextIndex = () => String(++sectionIndex).padStart(2, '0');
     </div>
     <div class="detail-meta" aria-label="Project metadata">
       <div class="detail-meta-item"><span>{project.role ? 'Status' : 'Focus'}</span><span>{project.role ?? project.category}</span></div>
-      <div class="detail-meta-item"><span>Date</span><span>{project.dates ?? 'Date not supplied'}</span></div>
+      {project.dates && <div class="detail-meta-item"><span>Date</span><span>{project.dates}</span></div>}
       <div class="detail-meta-item"><span>Technology</span><span>{project.technologies.join(' · ')}</span></div>
     </div>
   </section>

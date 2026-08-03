@@ -4,12 +4,12 @@
 }
 
 .research-section .section-heading {
-  border-color: #526071;
+  border-color: var(--night-rule-strong);
 }
 
 .research-section .section-index,
 .research-section .eyebrow {
-  color: #aabaff;
+  color: var(--night-accent);
 }
 
 .research-section .section-heading p {
@@ -17,12 +17,12 @@
 }
 
 .research-list {
-  border-top: 1px solid #394553;
+  border-top: 1px solid var(--night-rule);
 }
 
 .research-note {
   padding-block: clamp(2.7rem, 6vw, 5rem);
-  border-bottom: 1px solid #394553;
+  border-bottom: 1px solid var(--night-rule);
 }
 
 .research-note-header {
@@ -30,7 +30,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding-bottom: .8rem;
-  border-bottom: 1px solid #303a47;
+  border-bottom: 1px solid var(--night-rule-soft);
 }
 
 .research-note-header > div {
@@ -40,14 +40,14 @@
 }
 
 .research-status {
-  color: #aabaff;
+  color: var(--night-accent);
   font-family: var(--font-mono);
   font-size: .67rem;
   text-transform: uppercase;
 }
 
 .research-note .meta {
-  color: #7f8b9a;
+  color: var(--night-faint);
 }
 
 .research-note-grid {
@@ -73,18 +73,18 @@
 }
 
 .research-note .tag::before {
-  color: #8da5ff;
+  color: var(--night-accent-strong);
 }
 
 .research-question {
   padding: 1rem;
-  border: 1px solid #445061;
-  background: #141d29;
+  border: 1px solid var(--night-rule-strong);
+  background: var(--night-surface);
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
 }
 
 .research-question .annotation {
-  color: #8da5ff;
+  color: var(--night-accent-strong);
   text-transform: uppercase;
 }
 
@@ -99,7 +99,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   margin: 0;
-  background: #35404e;
+  background: var(--night-rule);
 }
 
 .research-fields > div {
@@ -109,7 +109,7 @@
 
 .research-fields dt {
   margin-bottom: .4rem;
-  color: #8da5ff;
+  color: var(--night-accent-strong);
   font-family: var(--font-mono);
   font-size: .62rem;
   letter-spacing: .05em;
@@ -123,7 +123,7 @@
 }
 
 .research-fields .research-result {
-  border-left: 2px solid #8da5ff;
+  border-left: 2px solid var(--night-accent-strong);
 }
 
 .research-fields .research-result dd {
@@ -132,7 +132,7 @@
 
 .research-link {
   justify-self: start;
-  color: #aabaff;
+  color: var(--night-accent);
 }
 
 @media (max-width: 820px) {

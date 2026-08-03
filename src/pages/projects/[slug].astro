@@ -14,7 +14,7 @@ export function getStaticPaths() {
 }
 
 const { project, previous, next } = Astro.props;
-if (!project) return Astro.redirect('/404/');
+if (!project) throw new Error('Project detail data is required for this static route.');
 ---
 
 <ProjectLayout project={project} previous={previous} next={next} />

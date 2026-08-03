@@ -186,7 +186,7 @@
 
 .site-footer {
   padding-block: 1.35rem;
-  border-top: 1px solid #2f3744;
+  border-top: 1px solid var(--night-rule);
   background: var(--night);
   color: var(--night-muted);
   font-size: .74rem;
@@ -222,8 +222,8 @@
   width: 2rem;
   height: 2rem;
   place-items: center;
-  border: 1px solid #394454;
-  color: #8ba2ff;
+  border: 1px solid var(--night-rule);
+  color: var(--night-accent-strong);
   font-family: var(--font-mono);
   font-size: .62rem;
 }
