@@ -28,6 +28,7 @@ for (const file of requiredFiles) {
 const projects = readFileSync('src/data/projects.ts', 'utf8');
 const profile = readFileSync('src/data/profile.ts', 'utf8');
 const explorer = readFileSync('src/data/playgrounds/unlearning.ts', 'utf8');
+const site = readFileSync('src/data/site.ts', 'utf8');
 const sectionDeck = readFileSync('src/scripts/section-deck.ts', 'utf8');
 const heroVisual = readFileSync('src/components/visuals/HeroVisual.astro', 'utf8');
 const baseLayout = readFileSync('src/layouts/BaseLayout.astro', 'utf8');
@@ -53,12 +54,21 @@ for (const behavior of ['pushState', 'popstate', 'hashchange', 'aria-current']) 
 for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typed-subtitle', 'data-typing-enter', "dataset.motion === 'reduced'", 'motionchange', 'openOverview', 'pressEnterAndOpen', 'data-enter-state']) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero typing animation is missing ${behavior} behavior.`);
 }
-if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js .hero:not([data-intro-state]) .hero-overview")) {
+if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js[data-intro-visit='first'] .hero:not([data-intro-state]) .hero-overview")) {
   throw new Error('Hero refresh flash prevention is missing.');
+}
+if (!site.includes("introStorageKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("dataset.introVisit = introSeen ? 'returning' : 'first'")) {
+  throw new Error('Versioned first-visit state is missing from the pre-paint initialization.');
+}
+for (const behavior of ["dataset.introVisit === 'returning'", "localStorage.setItem(introStorageKey, 'seen')"]) {
+  if (!heroVisual.includes(behavior)) throw new Error(`Hero first-visit behavior is missing: ${behavior}`);
 }
 for (const timing of ['typingStartDelay', 'characterDelay', 'completedTitleHold', 'enterPressHold']) {
   const value = Number(heroVisual.match(new RegExp(`const ${timing} = (\\d+);`))?.[1]);
   if (!value || value > 5000) throw new Error(`Hero animation timing is invalid: ${timing}`);
+}
+if (!heroVisual.includes('const typingStartDelay = 250;') || !heroVisual.includes('const enterPressHold = 250;')) {
+  throw new Error('Requested hero timing adjustments are missing.');
 }
 
 console.log(`Content checks passed: ${requiredFiles.length} required files, ${requiredSlugs.length} projects, and ${requiredCategories.length} categories verified.`);

@@ -96,6 +96,9 @@ if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-
   throw new Error('Accessible hero typing station is missing');
 }
 if (!homeHtml.includes('data-hero-gate') || !homeHtml.includes('data-overview-content')) throw new Error('Hero intro gate or Overview fallback is missing');
+if (!homeHtml.includes('data-intro-storage-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes("dataset.introVisit")) {
+  throw new Error('Generated homepage is missing first-visit intro initialization.');
+}
 
 for (const explorerPage of ['lab/index.html', 'projects/machine-unlearning-vision-language-models/index.html']) {
   const html = readFileSync(join(dist, explorerPage), 'utf8');

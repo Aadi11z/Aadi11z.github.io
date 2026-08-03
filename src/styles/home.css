@@ -82,7 +82,11 @@ html.deck-ready #contact .contact-section {
 
 /* The head script adds `.js` before first paint. This prevents the server-rendered
    Overview and completed title from flashing before the intro script initializes. */
-html.js .hero:not([data-intro-state]) .hero-overview {
+html.js[data-intro-visit='first'] .hero:not([data-intro-state]) .hero-overview {
+  display: none;
+}
+
+html.js[data-intro-visit='returning'] .hero:not([data-intro-state]) .hero-intro {
   display: none;
 }
 
@@ -105,6 +109,10 @@ html.js .typing-station:not([data-enhanced='true']) [data-typed-subtitle] {
 .hero[data-intro-state='entered'] .hero-overview {
   display: block;
   animation: hero-overview-enter 320ms var(--ease-out) both;
+}
+
+html[data-intro-visit='returning'] .hero[data-intro-state='entered'] .hero-overview {
+  animation: none;
 }
 
 @keyframes hero-intro-exit {

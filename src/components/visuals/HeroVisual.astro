@@ -95,10 +95,13 @@ const rows: Key[][] = [
     const name = station.dataset.name ?? '';
     const subtitle = station.dataset.subtitle ?? '';
     const sequence = `${name}\n${subtitle}`;
-    const typingStartDelay = 500;
+    const typingStartDelay = 250;
     const characterDelay = 125;
     const completedTitleHold = 1300;
-    const enterPressHold = 450;
+    const enterPressHold = 250;
+    const root = document.documentElement;
+    const introStorageKey = root.dataset.introStorageKey;
+    const isReturningVisitor = root.dataset.introVisit === 'returning';
     let timers: number[] = [];
     let hasPlayed = false;
 
@@ -112,6 +115,9 @@ const rows: Key[][] = [
     const openOverview = (focusHeading = false) => {
       if (!gate || !overview || gate.dataset.introState === 'entered') return;
       clearTimers();
+      try {
+        if (introStorageKey) localStorage.setItem(introStorageKey, 'seen');
+      } catch { /* Storage may be disabled. */ }
       gate.dataset.introState = 'exiting';
       const finish = () => {
         gate.dataset.introState = 'entered';
@@ -182,6 +188,11 @@ const rows: Key[][] = [
     };
 
     station.dataset.enhanced = 'true';
+    if (isReturningVisitor) {
+      gate?.setAttribute('data-intro-state', 'entered');
+      return;
+    }
+
     replay?.addEventListener('click', play);
     enter?.addEventListener('click', () => openOverview(true));
     window.addEventListener('motionchange', () => {
