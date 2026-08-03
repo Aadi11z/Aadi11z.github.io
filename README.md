@@ -22,6 +22,20 @@ npm run dev
 
 Open `http://localhost:4321/`. Local development uses the root path unless `PUBLIC_BASE_PATH` is explicitly set.
 
+The hero intro defaults to a static design preview in development: the completed keyboard screen remains visible, and pressing Enter only previews the key state. To run the real first-visit animation locally:
+
+```bash
+PUBLIC_INTRO_DEBUG=false npm run dev
+```
+
+To force the static preview in any build or preview environment:
+
+```bash
+PUBLIC_INTRO_DEBUG=true npm run build
+```
+
+Production builds default to the real once-per-browser intro when `PUBLIC_INTRO_DEBUG` is unset.
+
 ## Validation
 
 ```bash

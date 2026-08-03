@@ -101,6 +101,7 @@ const rows: Key[][] = [
     const enterPressHold = 250;
     const root = document.documentElement;
     const introStorageKey = root.dataset.introStorageKey;
+    const isStaticPreview = root.dataset.introDebug === 'true';
     const isReturningVisitor = root.dataset.introVisit === 'returning';
     let timers: number[] = [];
     let hasPlayed = false;
@@ -155,6 +156,27 @@ const rows: Key[][] = [
       if (autoAdvance) timers.push(window.setTimeout(pressEnterAndOpen, completedTitleHold));
     };
 
+    const showStaticPreview = () => {
+      showCompleteTitle(false);
+      station.dataset.staticPreview = 'true';
+      if (readout) readout.textContent = 'PREVIEW / STATIC';
+      if (status) status.textContent = 'Static intro preview. The Overview transition is disabled in development.';
+    };
+
+    const previewEnterPress = () => {
+      clearTimers();
+      station.dataset.typingState = 'confirming';
+      station.dataset.enterState = 'pressed';
+      if (readout) readout.textContent = 'PREVIEW / ENTER';
+      station.querySelectorAll<HTMLElement>('[data-key="enter"], [data-key="enter-bottom"]').forEach((key) => key.classList.add('is-pressed'));
+      timers.push(window.setTimeout(() => {
+        station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
+        station.removeAttribute('data-enter-state');
+        station.dataset.typingState = 'complete';
+        if (readout) readout.textContent = 'PREVIEW / STATIC';
+      }, enterPressHold));
+    };
+
     const play = () => {
       if (!output || !subtitleOutput || document.documentElement.dataset.motion === 'reduced') {
         showCompleteTitle();
@@ -188,6 +210,12 @@ const rows: Key[][] = [
     };
 
     station.dataset.enhanced = 'true';
+    if (isStaticPreview) {
+      enter?.addEventListener('click', previewEnterPress);
+      showStaticPreview();
+      return;
+    }
+
     if (isReturningVisitor) {
       gate?.setAttribute('data-intro-state', 'entered');
       return;
