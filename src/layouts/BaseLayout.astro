@@ -13,6 +13,7 @@ interface Props {
   description?: string;
   type?: 'website' | 'article';
   noindex?: boolean;
+  layout?: 'document' | 'deck';
 }
 
 const {
@@ -20,6 +21,7 @@ const {
   description = 'Portfolio of Aaditya Bhatnagar, a Dubai-based computer science student building machine-learning systems, grounded AI products, quantitative research platforms, and machine-unlearning research.',
   type = 'website',
   noindex = false,
+  layout = 'document',
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 const canonicalPath = siteConfig.basePath && (currentPath === siteConfig.basePath || currentPath.startsWith(`${siteConfig.basePath}/`))
@@ -88,10 +90,10 @@ const personSchema = {
       })();
     </script>
   </head>
-  <body>
+  <body data-layout={layout}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     <Footer />

@@ -1,3 +1,75 @@
+.deck-panel[hidden] {
+  display: none !important;
+}
+
+html.deck-ready,
+html.deck-ready body[data-layout='deck'] {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.deck-ready body[data-layout='deck'] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+html.deck-ready body[data-layout='deck'] .site-header {
+  position: relative;
+}
+
+html.deck-ready body[data-layout='deck'] main {
+  min-height: 0;
+  overflow: hidden;
+}
+
+html.deck-ready body[data-layout='deck'] .site-footer {
+  display: none;
+}
+
+.home-deck {
+  height: 100%;
+}
+
+html.deck-ready .deck-panel {
+  height: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--rule-strong) transparent;
+  scrollbar-width: thin;
+}
+
+html.deck-ready .deck-panel:not([hidden]) {
+  animation: deck-panel-enter 260ms var(--ease-out) both;
+}
+
+html.deck-ready .deck-panel > .section,
+html.deck-ready .deck-panel.section {
+  padding-block: clamp(2.5rem, 6vh, 5.5rem);
+}
+
+html.deck-ready #overview .hero,
+html.deck-ready #contact .contact-section {
+  min-height: 100%;
+}
+
+html.deck-ready #contact .contact-section {
+  display: grid;
+  align-items: center;
+}
+
+@keyframes deck-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .hero {
   min-height: calc(100svh - var(--header-height));
   padding-block: clamp(2rem, 5vw, 4.5rem) 1.2rem;

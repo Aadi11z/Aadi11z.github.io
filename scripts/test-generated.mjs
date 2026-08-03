@@ -84,6 +84,15 @@ for (const link of internalLinks) {
 const archiveHtml = readFileSync(join(dist, 'projects/index.html'), 'utf8');
 if ((archiveHtml.match(/data-filter=/g) ?? []).length < 8 || !archiveHtml.includes('data-project-card')) throw new Error('Project archive filters or cards are missing');
 
+const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
+if (!homeHtml.includes('data-layout="deck"') || !homeHtml.includes('data-section-deck')) throw new Error('Homepage section deck is missing');
+for (const section of ['overview', 'work', 'research', 'experience', 'about', 'contact']) {
+  if (!homeHtml.includes(`id="${section}"`) || !homeHtml.includes(`data-section-link="${section}"`)) {
+    throw new Error(`Homepage deck section or navigation link is missing: ${section}`);
+  }
+}
+if ((homeHtml.match(/<(?:div|section)\b[^>]*\bdata-deck-panel\b/g) ?? []).length !== 6) throw new Error('Homepage must render exactly six section panels');
+
 for (const explorerPage of ['lab/index.html', 'projects/machine-unlearning-vision-language-models/index.html']) {
   const html = readFileSync(join(dist, explorerPage), 'utf8');
   if (!html.includes('data-unlearning-explorer') || !html.includes('<noscript>') || !html.includes('Measured points only')) {

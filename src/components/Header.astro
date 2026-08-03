@@ -14,16 +14,17 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
 
 <header class="site-header">
   <div class="shell header-inner">
-    <a class="wordmark" href={homePath} aria-label={`${profile.name} home`}>
+    <a class="wordmark" href={onHome ? '#overview' : homePath} aria-label={`${profile.name} home`}>
       <span class="wordmark-mark">{profile.monogram}</span>
       <span class="wordmark-name">{profile.name}<small>ML / DATA / SYSTEMS</small></span>
     </a>
     <nav class="desktop-nav" aria-label="Primary navigation">
-      <a class="nav-link" data-section-link="work" href={link('work')}>Work</a>
-      <a class="nav-link" data-section-link="research" href={link('research')}>Research</a>
-      <a class="nav-link" data-section-link="experience" href={link('experience')}>Experience</a>
-      <a class="nav-link" data-section-link="about" href={link('about')}>About</a>
-      <a class="nav-link" data-section-link="contact" href={link('contact')}>Contact</a>
+      <a class="nav-link" data-section-link="overview" aria-controls={onHome ? 'overview' : undefined} href={link('overview')}>Overview</a>
+      <a class="nav-link" data-section-link="work" aria-controls={onHome ? 'work' : undefined} href={link('work')}>Work</a>
+      <a class="nav-link" data-section-link="research" aria-controls={onHome ? 'research' : undefined} href={link('research')}>Research</a>
+      <a class="nav-link" data-section-link="experience" aria-controls={onHome ? 'experience' : undefined} href={link('experience')}>Experience</a>
+      <a class="nav-link" data-section-link="about" aria-controls={onHome ? 'about' : undefined} href={link('about')}>About</a>
+      <a class="nav-link" data-section-link="contact" aria-controls={onHome ? 'contact' : undefined} href={link('contact')}>Contact</a>
       <a class="nav-link nav-resume" aria-current={onResume ? 'page' : undefined} href={resumePath}>Résumé <span aria-hidden="true">↗</span></a>
       <div class="header-preferences" aria-label="Display preferences">
         <MotionPreference compact />
@@ -42,11 +43,12 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
   <nav class="mobile-nav" id="mobile-navigation" aria-label="Mobile navigation" aria-hidden="true" data-mobile-nav data-open="false">
     <div class="shell mobile-nav-inner">
       <span class="meta mobile-nav-label">Index / Navigate</span>
-      <a href={link('work')}><span>01</span>Work</a>
-      <a href={link('research')}><span>02</span>Research</a>
-      <a href={link('experience')}><span>03</span>Experience</a>
-      <a href={link('about')}><span>04</span>About</a>
-      <a href={link('contact')}><span>05</span>Contact</a>
+      <a data-section-link="overview" aria-controls={onHome ? 'overview' : undefined} href={link('overview')}><span>00</span>Overview</a>
+      <a data-section-link="work" aria-controls={onHome ? 'work' : undefined} href={link('work')}><span>01</span>Work</a>
+      <a data-section-link="research" aria-controls={onHome ? 'research' : undefined} href={link('research')}><span>02</span>Research</a>
+      <a data-section-link="experience" aria-controls={onHome ? 'experience' : undefined} href={link('experience')}><span>03</span>Experience</a>
+      <a data-section-link="about" aria-controls={onHome ? 'about' : undefined} href={link('about')}><span>04</span>About</a>
+      <a data-section-link="contact" aria-controls={onHome ? 'contact' : undefined} href={link('contact')}><span>05</span>Contact</a>
       <a href={withBase('/projects/')}><span>INDEX</span>Project archive</a>
       <a href={withBase('/lab/')}><span>LAB</span>Experiments</a>
       <a class="mobile-resume" href={resumePath}><span>PDF</span>Résumé</a>
@@ -99,23 +101,4 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
       }
     }
   });
-
-  const sectionLinks = Array.from(document.querySelectorAll<HTMLElement>('[data-section-link]'));
-  const sections = sectionLinks
-    .map((item) => document.getElementById(item.dataset.sectionLink ?? ''))
-    .filter((section): section is HTMLElement => Boolean(section));
-  if (sections.length && 'IntersectionObserver' in window) {
-    const visibleSections = new Map<string, number>();
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) visibleSections.set(entry.target.id, entry.boundingClientRect.top);
-        else visibleSections.delete(entry.target.id);
-      });
-      const active = [...visibleSections.entries()].sort((a, b) => Math.abs(a[1]) - Math.abs(b[1]))[0]?.[0];
-      if (!active) return;
-      sectionLinks.forEach((item) => item.removeAttribute('aria-current'));
-      document.querySelector(`[data-section-link="${active}"]`)?.setAttribute('aria-current', 'location');
-    }, { rootMargin: '-22% 0px -62% 0px', threshold: 0 });
-    sections.forEach((section) => observer.observe(section));
-  }
 </script>

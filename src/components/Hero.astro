@@ -17,7 +17,7 @@ import HeroVisual from './visuals/HeroVisual.astro';
       <p class="hero-headline">{profile.headline}</p>
       <p class="hero-copy">{profile.description}</p>
       <div class="button-row hero-actions">
-        <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">↓</span></a>
+        <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">→</span></a>
         <a class="button button-quiet" href={withBase('/resume/')}>Résumé <span aria-hidden="true">↗</span></a>
         <a class="button button-quiet" href={`mailto:${profile.email}`}>Email <span aria-hidden="true">↗</span></a>
       </div>
@@ -28,6 +28,6 @@ import HeroVisual from './visuals/HeroVisual.astro';
   <div class="hero-footnote">
     <span class="availability-dot" aria-hidden="true"></span>
     <p>{profile.availability}</p>
-    <span class="meta">SCROLL / 01</span>
+    <span class="meta">SELECT / 01</span>
   </div>
 </section>
