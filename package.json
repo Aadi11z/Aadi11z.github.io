@@ -25,5 +25,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true
   }
 }
