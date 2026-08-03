@@ -67,7 +67,7 @@ for (const timing of ['typingStartDelay', 'characterDelay', 'completedTitleHold'
   const value = Number(heroVisual.match(new RegExp(`const ${timing} = (\\d+);`))?.[1]);
   if (!value || value > 5000) throw new Error(`Hero animation timing is invalid: ${timing}`);
 }
-if (!heroVisual.includes('const typingStartDelay = 250;') || !heroVisual.includes('const enterPressHold = 250;')) {
+if (!heroVisual.includes('const typingStartDelay = 250;') || !heroVisual.includes('const completedTitleHold = 1200;') || !heroVisual.includes('const enterPressHold = 250;')) {
   throw new Error('Requested hero timing adjustments are missing.');
 }
 
