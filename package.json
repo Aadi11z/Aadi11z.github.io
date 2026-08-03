@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -12,7 +15,8 @@
     "typecheck": "astro check",
     "test": "node scripts/test-content.mjs",
     "generated-check": "node scripts/test-generated.mjs",
-    "validate": "npm run test && npm run check && npm run build && npm run generated-check"
+    "budget-check": "node scripts/check-budgets.mjs",
+    "validate": "npm run test && npm run check && npm run build && npm run generated-check && npm run budget-check"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.5.0",

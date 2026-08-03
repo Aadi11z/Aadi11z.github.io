@@ -1,22 +1,26 @@
 # Aaditya Bhatnagar — Portfolio
 
-An editorial, mostly-static portfolio for Aaditya Bhatnagar, built with Astro and TypeScript. It presents grounded AI systems, machine-learning research, quantitative platforms, production experience, education, and contact information without a backend or CMS.
+A static technical portfolio for Aaditya Bhatnagar. The “Editorial Manga Lab” design combines an evidence-led editorial layout with restrained manga-panel framing, original technical SVGs, native page transitions, and small interactive research tools.
 
 ## Stack
 
-- Astro 7 static site generation
-- TypeScript with centralized typed content in `src/data/`
-- Scoped component markup and tokenized CSS in `src/styles/global.css`
-- No React runtime, UI library, external fonts, or animation library
+- Astro 7 static-site generation
+- TypeScript and native `.astro` components
+- Typed content modules in `src/data/`
+- Modular tokenized CSS in `src/styles/`
+- Native browser JavaScript for navigation, filters, preferences, and explorers
+- No backend, CMS, client framework, remote font, or animation library
+
+Node 24 is pinned in `.node-version` for CI and Cloudflare Pages.
 
 ## Local development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Local development intentionally uses the root path: `http://localhost:4321/`. Do not set `PUBLIC_BASE_PATH` locally unless you specifically want to test a subpath deployment.
+Open `http://localhost:4321/`. Local development uses the root path unless `PUBLIC_BASE_PATH` is explicitly set.
 
 ## Validation
 
@@ -25,65 +29,111 @@ npm run test
 npm run lint
 npm run typecheck
 npm run build
+npm run generated-check
+npm run budget-check
 npm audit --omit=dev --audit-level=moderate
 ```
 
-`npm run validate` runs the content test, Astro check, and production build together. Set `ASTRO_TELEMETRY_DISABLED=1` in restricted environments if Astro cannot write its global telemetry preferences.
+`npm run validate` runs content checks, Astro diagnostics, a production build, generated-output checks, and performance-budget checks.
+
+To test a GitHub project-site base path:
+
+```bash
+PUBLIC_SITE_URL=https://aadi11z.github.io PUBLIC_BASE_PATH=website npm run build
+PUBLIC_SITE_URL=https://aadi11z.github.io PUBLIC_BASE_PATH=website npm run generated-check
+```
 
 ## Content editing
 
-- `src/data/profile.ts` — identity, education, about copy, and achievement
-- `src/data/projects.ts` — project cards and detail-page content
-- `src/data/research.ts` — research listings
-- `src/data/experience.ts` — professional experience
-- `src/data/skills.ts` — skills and primary tools
-- `src/components/` — reusable presentation components
-- `src/layouts/` — global and project-detail layouts
-- `src/styles/global.css` — design tokens, layout, responsive behavior, and theme styles
+- `src/data/profile.ts` — identity, education, About copy, and achievement
+- `src/data/projects.ts` — archive records, featured work, project evidence, and detail sections
+- `src/data/research.ts` — research-note presentation
+- `src/data/experience.ts` — professional experience and certifications
+- `src/data/skills.ts` — capabilities and primary tools
+- `src/data/playgrounds/unlearning.ts` — measured machine-unlearning explorer data
 
-To add or update a project, edit `src/data/projects.ts`. Add a `sections` array when it needs a detail page; the static route is generated automatically from the project slug. Only add live, repository, report, or poster URLs when they are real and available.
+Project links are optional. Add `liveUrl`, `repositoryUrl`, or `reportUrl` only when the public URL is real. A project receives a static detail page when it has a `detail` object in `src/data/projects.ts`.
 
-## Resume privacy
+Explorer observations require an explicit provenance value. Missing experiment results must remain unavailable rather than being estimated or interpolated.
 
-The original phone-bearing CV is intentionally not stored in this repository or any deployment path. The public file is `public/Aaditya_Bhatnagar_Resume.pdf`: a visually redacted, rasterized copy named professionally for download. The rasterization prevents the removed phone field from being recovered from the PDF text layer. To replace it, work from a private source outside the repository, update only the public PDF, and verify that `pdftotext` or OCR cannot recover the private number.
+## Presentation architecture
 
-## Deployment configuration
+- `src/components/visuals/` — original project and hero SVG illustrations
+- `src/components/playgrounds/` — progressively enhanced static explorers
+- `src/scripts/` — small native-browser interaction modules
+- `src/styles/tokens.css` — color, spacing, type, and motion tokens
+- `src/styles/global.css` — reset, typography, and shared utilities
+- `src/styles/layout.css` — navigation, footer, résumé, and 404 layouts
+- `src/styles/home.css` — homepage sections
+- `src/styles/projects.css` — archive, project cards, and case studies
+- `src/styles/research.css` — research-note presentation
+- `src/styles/playgrounds.css` — explorer and lab layouts
+- `src/styles/effects.css` — reduced motion, reveals, and native View Transitions
 
-Deployment is centralized in `astro.config.mjs` and `src/data/site.ts`:
+Theme and motion preferences follow the user’s system setting on first visit and persist manual choices in `localStorage`. Important content is rendered during the Astro build and remains available without JavaScript.
 
-- `PUBLIC_SITE_URL` is the production origin, such as `https://aadi11z.github.io` or `https://portfolio.example.com`.
-- `PUBLIC_BASE_PATH` is the deployment subpath without a trailing slash. It is empty for the intended GitHub user-site deployment.
-- Astro `site`, canonical URLs, Open Graph URLs, sitemap URLs, manifest URLs, resume URLs, and internal links all use these settings.
-- `.env.example` documents the two variables for local or hosted builds.
+## Résumé privacy
 
-### Current GitHub user-site configuration
+The public download is `public/Aaditya_Bhatnagar_Resume.pdf`. It is a phone-redacted, rasterized public copy; it is not byte-for-byte identical to the private source CV. The original phone-bearing CV must remain outside the repository and every deployable directory.
 
-The intended production URL is:
+To replace the résumé:
+
+1. Start from a private source outside this repository.
+2. Remove the phone number without applying the redaction rectangle to unrelated pages.
+3. Export the public file as `public/Aaditya_Bhatnagar_Resume.pdf`.
+4. Render every page and confirm the PDF is legible.
+5. Confirm OCR and `pdftotext` cannot recover the phone number.
+
+## Deployment variables
+
+Configuration is centralized in `astro.config.mjs` and `src/data/site.ts`:
+
+- `PUBLIC_SITE_URL` — production origin without a trailing slash
+- `PUBLIC_BASE_PATH` — deployment subpath without surrounding slashes; empty for root deployments
+
+These values control canonical URLs, sitemap URLs, Open Graph URLs, the web manifest, résumé links, assets, and internal navigation.
+
+## GitHub Pages
+
+The workflow in `.github/workflows/deploy.yml` builds with Node 24, runs validation, uploads `dist`, and deploys the `main` branch.
+
+### User site
+
+Repository name: `Aadi11z.github.io`
 
 ```text
-https://aadi11z.github.io/
+PUBLIC_SITE_URL=https://aadi11z.github.io
+PUBLIC_BASE_PATH=
 ```
 
-The workflow uses `PUBLIC_SITE_URL=https://aadi11z.github.io` and an empty `PUBLIC_BASE_PATH`. Enable GitHub Pages with **GitHub Actions** as the source.
+The resulting site is `https://aadi11z.github.io/`.
 
-GitHub user sites require the repository to be named exactly `Aadi11z.github.io`. Rename the current `Aadi11z/website` repository to `Aadi11z.github.io` in GitHub repository settings before expecting the root URL to serve this build. Until that rename, GitHub will continue treating the repository as a project site under `/website`.
+### Project site
 
-### GitHub user site
+For a repository such as `website`:
 
-The workflow is already configured for the user site: `PUBLIC_BASE_PATH: ''` and `PUBLIC_SITE_URL: https://aadi11z.github.io`.
+```text
+PUBLIC_SITE_URL=https://aadi11z.github.io
+PUBLIC_BASE_PATH=website
+```
+
+The resulting site is `https://aadi11z.github.io/website/`. Update the workflow environment values before deploying in this mode.
 
 ### Custom domain
 
-Set `PUBLIC_SITE_URL` to the custom origin and leave `PUBLIC_BASE_PATH` empty. Add a `public/CNAME` file containing the domain if the hosting provider requires one. No CNAME is included because no custom domain was supplied.
+Set `PUBLIC_SITE_URL` to the custom HTTPS origin and leave `PUBLIC_BASE_PATH` empty. Add `public/CNAME` only after a real domain has been selected.
 
-### Cloudflare Pages or Vercel
+## Cloudflare Pages
 
-Use:
+Use Git integration with:
 
+- Production branch: `main`
 - Build command: `npm run build`
 - Output directory: `dist`
-- Node version: 24 (Astro 7 requires Node 22.12 or newer)
+- Node version: `24` via `.node-version`
 
-Set both public environment variables to match the chosen origin and path. For a root deployment, use an empty `PUBLIC_BASE_PATH`.
+Set `PUBLIC_SITE_URL` to the production `pages.dev` or custom-domain origin and leave `PUBLIC_BASE_PATH` empty. Preview deployments can use the production canonical origin to avoid indexing temporary preview URLs. `public/_headers` supplies conservative security headers and immutable caching for hashed Astro assets.
 
-The GitHub Pages workflow runs `npm ci`, `npm run check`, and `npm run build`, then uploads `dist` with the Pages deploy action.
+## Vercel and other static hosts
+
+Use `npm run build` and publish `dist`. No server adapter or runtime environment is required.
