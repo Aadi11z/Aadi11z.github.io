@@ -80,6 +80,17 @@ html.deck-ready #contact .contact-section {
   min-width: 0;
 }
 
+/* The head script adds `.js` before first paint. This prevents the server-rendered
+   Overview and completed title from flashing before the intro script initializes. */
+html.js .hero:not([data-intro-state]) .hero-overview {
+  display: none;
+}
+
+html.js .typing-station:not([data-enhanced='true']) [data-typed-name],
+html.js .typing-station:not([data-enhanced='true']) [data-typed-subtitle] {
+  visibility: hidden;
+}
+
 .hero[data-intro-state='active'] .hero-overview,
 .hero[data-intro-state='exiting'] .hero-overview,
 .hero[data-intro-state='entered'] .hero-intro {
@@ -357,7 +368,8 @@ html.deck-ready #contact .contact-section {
   text-transform: uppercase;
 }
 
-.typing-station[data-enhanced='true'][data-typing-state='complete'] .typing-enter {
+.typing-station[data-enhanced='true'][data-typing-state='complete'] .typing-enter,
+.typing-station[data-enhanced='true'][data-typing-state='confirming'] .typing-enter {
   display: inline-grid;
 }
 
@@ -370,6 +382,7 @@ html.deck-ready #contact .contact-section {
   background: var(--night-surface);
   box-shadow: 0 3px 0 var(--night-rule-strong);
   color: var(--night-accent-strong);
+  transition: box-shadow 100ms ease, transform 100ms ease, background-color 100ms ease;
 }
 
 .typing-enter:hover,
@@ -377,9 +390,14 @@ html.deck-ready #contact .contact-section {
   background: color-mix(in srgb, var(--night-accent-strong) 14%, transparent);
 }
 
-.typing-enter:active .typing-enter-key {
+.typing-enter:active .typing-enter-key,
+.typing-station[data-enter-state='pressed'] .typing-enter-key {
   box-shadow: 0 1px 0 var(--night-rule-strong);
   transform: translateY(2px);
+}
+
+.typing-station[data-enter-state='pressed'] .typing-enter {
+  background: color-mix(in srgb, var(--night-accent-strong) 18%, transparent);
 }
 
 .typing-readout {

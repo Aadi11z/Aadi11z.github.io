@@ -32,8 +32,8 @@ const rows: Key[][] = [
 ];
 ---
 
-<div class="typing-station manga-panel" data-typing-station data-name={profile.name} data-subtitle="Portfolio" data-reveal aria-describedby="typing-station-description">
-  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}, Portfolio, before presenting an Enter Overview button.</p>
+<div class="typing-station manga-panel" data-typing-station data-name={profile.name} data-subtitle="Portfolio" aria-describedby="typing-station-description">
+  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}, Portfolio, presses Enter, and opens the portfolio overview.</p>
   <div class="typing-station-label meta">
     <span>TYPEWRITER STRIP / 00</span>
     <button class="typing-replay" type="button" data-typing-replay aria-label="Replay the name typing animation">Replay ↻</button>
@@ -49,9 +49,9 @@ const rows: Key[][] = [
       </span>
       <span class="typing-cursor" aria-hidden="true"></span>
     </div>
-    <button class="typing-enter" type="button" data-typing-enter>
+    <button class="typing-enter" type="button" data-typing-enter aria-label="Open the portfolio overview now">
       <span class="typing-enter-key">Enter ↵</span>
-      <span>Open Overview</span>
+      <span data-enter-label>Open Overview</span>
     </button>
     <div class="typing-readout meta" aria-hidden="true">
       <span data-typing-readout>INPUT / WAITING</span>
@@ -74,7 +74,7 @@ const rows: Key[][] = [
 
   <div class="typing-station-caption">
     <span class="annotation-mark" aria-hidden="true">↳</span>
-    <span>Type the identity, then press Enter to open the portfolio overview.</span>
+    <span>The sequence types the identity, confirms with Enter, then opens the overview.</span>
     <span class="meta">26 CHAR / ENTER</span>
   </div>
 </div>
@@ -87,6 +87,7 @@ const rows: Key[][] = [
     const subtitleOutput = station.querySelector<HTMLElement>('[data-typed-subtitle]');
     const replay = station.querySelector<HTMLButtonElement>('[data-typing-replay]');
     const enter = station.querySelector<HTMLButtonElement>('[data-typing-enter]');
+    const enterLabel = station.querySelector<HTMLElement>('[data-enter-label]');
     const readout = station.querySelector<HTMLElement>('[data-typing-readout]');
     const status = station.querySelector<HTMLElement>('[data-typing-status]');
     const gate = station.closest<HTMLElement>('[data-hero-gate]');
@@ -94,6 +95,10 @@ const rows: Key[][] = [
     const name = station.dataset.name ?? '';
     const subtitle = station.dataset.subtitle ?? '';
     const sequence = `${name}\n${subtitle}`;
+    const typingStartDelay = 500;
+    const characterDelay = 125;
+    const completedTitleHold = 1300;
+    const enterPressHold = 450;
     let timers: number[] = [];
     let hasPlayed = false;
 
@@ -101,16 +106,47 @@ const rows: Key[][] = [
       timers.forEach((timer) => window.clearTimeout(timer));
       timers = [];
       station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
+      station.removeAttribute('data-enter-state');
     };
 
-    const showCompleteTitle = () => {
+    const openOverview = (focusHeading = false) => {
+      if (!gate || !overview || gate.dataset.introState === 'entered') return;
+      clearTimers();
+      gate.dataset.introState = 'exiting';
+      const finish = () => {
+        gate.dataset.introState = 'entered';
+        if (!focusHeading) return;
+        const heading = overview.querySelector<HTMLElement>('h2');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus({ preventScroll: true });
+      };
+      if (document.documentElement.dataset.motion === 'reduced') finish();
+      else timers.push(window.setTimeout(finish, 260));
+    };
+
+    const pressEnterAndOpen = () => {
+      if (gate?.dataset.introState === 'entered') return;
+      station.dataset.typingState = 'confirming';
+      station.dataset.enterState = 'pressed';
+      if (enterLabel) enterLabel.textContent = 'Opening Overview';
+      if (readout) readout.textContent = 'INPUT / ENTER';
+      if (status) status.textContent = 'Enter pressed. Opening the portfolio overview.';
+      station.querySelectorAll<HTMLElement>('[data-key="enter"], [data-key="enter-bottom"]').forEach((key) => key.classList.add('is-pressed'));
+      timers.push(window.setTimeout(() => openOverview(), enterPressHold));
+    };
+
+    const showCompleteTitle = (autoAdvance = true) => {
       clearTimers();
       if (output) output.textContent = name;
       if (subtitleOutput) subtitleOutput.textContent = subtitle;
       station.dataset.typingState = 'complete';
+      if (enterLabel) enterLabel.textContent = 'Open Overview';
       if (readout) readout.textContent = 'INPUT / COMPLETE';
-      if (status) status.textContent = 'Typing complete. Activate Enter Overview to continue.';
+      if (status) status.textContent = autoAdvance
+        ? 'Typing complete. Enter will be pressed automatically.'
+        : 'Typing animation skipped. Activate Open Overview to continue.';
       if (gate?.dataset.introState !== 'entered') gate?.setAttribute('data-intro-state', 'active');
+      if (autoAdvance) timers.push(window.setTimeout(pressEnterAndOpen, completedTitleHold));
     };
 
     const play = () => {
@@ -140,36 +176,24 @@ const rows: Key[][] = [
           timers.push(releaseTimer);
 
           if (index === sequence.length - 1) showCompleteTitle();
-        }, 480 + index * 105);
+        }, typingStartDelay + index * characterDelay);
         timers.push(timer);
       });
     };
 
-    const openOverview = () => {
-      if (!gate || !overview) return;
-      clearTimers();
-      gate.dataset.introState = 'exiting';
-      const finish = () => {
-        gate.dataset.introState = 'entered';
-        const heading = overview.querySelector<HTMLElement>('h2');
-        heading?.setAttribute('tabindex', '-1');
-        heading?.focus({ preventScroll: true });
-      };
-      if (document.documentElement.dataset.motion === 'reduced') finish();
-      else timers.push(window.setTimeout(finish, 260));
-    };
-
     station.dataset.enhanced = 'true';
     replay?.addEventListener('click', play);
-    enter?.addEventListener('click', openOverview);
+    enter?.addEventListener('click', () => openOverview(true));
     window.addEventListener('motionchange', () => {
       if (gate?.dataset.introState === 'entered') return;
-      if (document.documentElement.dataset.motion === 'reduced') showCompleteTitle();
+      if (document.documentElement.dataset.motion === 'reduced') {
+        showCompleteTitle(false);
+      }
       else play();
     });
 
     if (document.documentElement.dataset.motion === 'reduced') {
-      showCompleteTitle();
+      showCompleteTitle(false);
     } else {
       if (output) output.textContent = '';
       if (subtitleOutput) subtitleOutput.textContent = '';
@@ -182,7 +206,7 @@ const rows: Key[][] = [
         if (!entries.some((entry) => entry.isIntersecting) || hasPlayed) return;
         play();
         observer.disconnect();
-      }, { threshold: .35 });
+      }, { threshold: .01 });
       observer.observe(station);
     } else if (document.documentElement.dataset.motion !== 'reduced') {
       play();

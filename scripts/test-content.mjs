@@ -30,6 +30,8 @@ const profile = readFileSync('src/data/profile.ts', 'utf8');
 const explorer = readFileSync('src/data/playgrounds/unlearning.ts', 'utf8');
 const sectionDeck = readFileSync('src/scripts/section-deck.ts', 'utf8');
 const heroVisual = readFileSync('src/components/visuals/HeroVisual.astro', 'utf8');
+const baseLayout = readFileSync('src/layouts/BaseLayout.astro', 'utf8');
+const homeStyles = readFileSync('src/styles/home.css', 'utf8');
 const forbidden = ['example.com', 'your-repo', 'placeholder', 'lorem ipsum'];
 for (const value of forbidden) {
   if (projects.toLowerCase().includes(value)) throw new Error(`Placeholder content found: ${value}`);
@@ -48,8 +50,15 @@ if (/membershipInference:\s*[0-9]/.test(explorer)) throw new Error('Unsupported 
 for (const behavior of ['pushState', 'popstate', 'hashchange', 'aria-current']) {
   if (!sectionDeck.includes(behavior)) throw new Error(`Section deck is missing ${behavior} behavior.`);
 }
-for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typed-subtitle', 'data-typing-enter', "dataset.motion === 'reduced'", 'motionchange', 'openOverview']) {
+for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typed-subtitle', 'data-typing-enter', "dataset.motion === 'reduced'", 'motionchange', 'openOverview', 'pressEnterAndOpen', 'data-enter-state']) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero typing animation is missing ${behavior} behavior.`);
+}
+if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js .hero:not([data-intro-state]) .hero-overview")) {
+  throw new Error('Hero refresh flash prevention is missing.');
+}
+for (const timing of ['typingStartDelay', 'characterDelay', 'completedTitleHold', 'enterPressHold']) {
+  const value = Number(heroVisual.match(new RegExp(`const ${timing} = (\\d+);`))?.[1]);
+  if (!value || value > 5000) throw new Error(`Hero animation timing is invalid: ${timing}`);
 }
 
 console.log(`Content checks passed: ${requiredFiles.length} required files, ${requiredSlugs.length} projects, and ${requiredCategories.length} categories verified.`);
