@@ -85,6 +85,7 @@ const archiveHtml = readFileSync(join(dist, 'projects/index.html'), 'utf8');
 if ((archiveHtml.match(/data-filter=/g) ?? []).length < 8 || !archiveHtml.includes('data-project-card')) throw new Error('Project archive filters or cards are missing');
 
 const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
+const expectedIntroMode = process.env.PUBLIC_INTRO_MODE === 'design' ? 'design' : 'normal';
 if (!homeHtml.includes('data-layout="deck"') || !homeHtml.includes('data-section-deck')) throw new Error('Homepage section deck is missing');
 for (const section of ['overview', 'work', 'research', 'experience', 'about', 'contact']) {
   if (!homeHtml.includes(`id="${section}"`) || !homeHtml.includes(`data-section-link="${section}"`)) {
@@ -96,7 +97,7 @@ if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-
   throw new Error('Accessible hero typing station is missing');
 }
 if (!homeHtml.includes('data-hero-gate') || !homeHtml.includes('data-overview-content')) throw new Error('Hero intro gate or Overview fallback is missing');
-if (!homeHtml.includes('data-intro-storage-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes('data-intro-debug=') || !homeHtml.includes("dataset.introVisit")) {
+if (!homeHtml.includes('data-intro-storage-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes(`data-intro-mode="${expectedIntroMode}"`) || !homeHtml.includes("dataset.introVisit")) {
   throw new Error('Generated homepage is missing first-visit intro initialization.');
 }
 

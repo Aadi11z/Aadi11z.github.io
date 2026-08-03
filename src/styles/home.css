@@ -285,10 +285,6 @@ html[data-intro-visit='returning'] .hero[data-intro-state='entered'] .hero-overv
   align-items: center;
 }
 
-.typing-station[data-static-preview='true'] .typing-replay {
-  display: none;
-}
-
 .typing-replay:hover,
 .typing-replay:focus-visible {
   border-color: var(--night-accent);

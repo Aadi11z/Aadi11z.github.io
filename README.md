@@ -22,19 +22,24 @@ npm run dev
 
 Open `http://localhost:4321/`. Local development uses the root path unless `PUBLIC_BASE_PATH` is explicitly set.
 
-The hero intro defaults to a static design preview in development: the completed keyboard screen remains visible, and pressing Enter only previews the key state. To run the real first-visit animation locally:
+The hero intro has two explicit modes:
 
 ```bash
-PUBLIC_INTRO_DEBUG=false npm run dev
+npm run dev:design
+npm run dev:normal
 ```
 
-To force the static preview in any build or preview environment:
+- `design` runs the typing animation, then holds on the completed Enter screen. Enter previews its pressed state without opening Overview. Use this while refining the animation.
+- `normal` runs the recruiter-facing flow: typing completes, Enter is pressed automatically, and Overview opens. Returning visitors skip the intro after the first completed visit.
+
+Plain `npm run dev` defaults to design mode. Plain `npm run build` defaults to normal mode, so production cannot accidentally inherit the development default. You can also select either mode directly:
 
 ```bash
-PUBLIC_INTRO_DEBUG=true npm run build
+PUBLIC_INTRO_MODE=design npm run dev
+PUBLIC_INTRO_MODE=normal npm run build
 ```
 
-Production builds default to the real once-per-browser intro when `PUBLIC_INTRO_DEBUG` is unset.
+Restart the development server after changing modes because the mode is resolved when Astro starts. Normal mode records the completed intro under `aaditya-portfolio-intro-v1` in browser `localStorage`; design mode ignores and does not update that value.
 
 ## Validation
 

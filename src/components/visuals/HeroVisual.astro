@@ -101,7 +101,7 @@ const rows: Key[][] = [
     const enterPressHold = 250;
     const root = document.documentElement;
     const introStorageKey = root.dataset.introStorageKey;
-    const isStaticPreview = root.dataset.introDebug === 'true';
+    const isDesignMode = root.dataset.introMode === 'design';
     const isReturningVisitor = root.dataset.introVisit === 'returning';
     let timers: number[] = [];
     let hasPlayed = false;
@@ -148,38 +148,35 @@ const rows: Key[][] = [
       if (subtitleOutput) subtitleOutput.textContent = subtitle;
       station.dataset.typingState = 'complete';
       if (enterLabel) enterLabel.textContent = 'Open Overview';
-      if (readout) readout.textContent = 'INPUT / COMPLETE';
-      if (status) status.textContent = autoAdvance
-        ? 'Typing complete. Enter will be pressed automatically.'
-        : 'Typing animation skipped. Activate Open Overview to continue.';
+      if (readout) readout.textContent = isDesignMode ? 'DESIGN / HOLD' : 'INPUT / COMPLETE';
+      if (status) status.textContent = isDesignMode
+        ? 'Design mode complete. Automatic Enter and the Overview transition are disabled.'
+        : autoAdvance
+          ? 'Typing complete. Enter will be pressed automatically.'
+          : 'Typing animation skipped. Activate Open Overview to continue.';
       if (gate?.dataset.introState !== 'entered') gate?.setAttribute('data-intro-state', 'active');
       if (autoAdvance) timers.push(window.setTimeout(pressEnterAndOpen, completedTitleHold));
-    };
-
-    const showStaticPreview = () => {
-      showCompleteTitle(false);
-      station.dataset.staticPreview = 'true';
-      if (readout) readout.textContent = 'PREVIEW / STATIC';
-      if (status) status.textContent = 'Static intro preview. The Overview transition is disabled in development.';
     };
 
     const previewEnterPress = () => {
       clearTimers();
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
-      if (readout) readout.textContent = 'PREVIEW / ENTER';
+      if (readout) readout.textContent = 'DESIGN / ENTER';
+      if (status) status.textContent = 'Enter key preview. The Overview transition remains disabled in design mode.';
       station.querySelectorAll<HTMLElement>('[data-key="enter"], [data-key="enter-bottom"]').forEach((key) => key.classList.add('is-pressed'));
       timers.push(window.setTimeout(() => {
         station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
         station.removeAttribute('data-enter-state');
         station.dataset.typingState = 'complete';
-        if (readout) readout.textContent = 'PREVIEW / STATIC';
+        if (readout) readout.textContent = 'DESIGN / HOLD';
+        if (status) status.textContent = 'Design mode complete. Automatic Enter and the Overview transition are disabled.';
       }, enterPressHold));
     };
 
     const play = () => {
       if (!output || !subtitleOutput || document.documentElement.dataset.motion === 'reduced') {
-        showCompleteTitle();
+        showCompleteTitle(false);
         return;
       }
 
@@ -203,26 +200,22 @@ const rows: Key[][] = [
           const releaseTimer = window.setTimeout(() => key?.classList.remove('is-pressed'), 115);
           timers.push(releaseTimer);
 
-          if (index === sequence.length - 1) showCompleteTitle();
+          if (index === sequence.length - 1) showCompleteTitle(!isDesignMode);
         }, typingStartDelay + index * characterDelay);
         timers.push(timer);
       });
     };
 
     station.dataset.enhanced = 'true';
-    if (isStaticPreview) {
-      enter?.addEventListener('click', previewEnterPress);
-      showStaticPreview();
-      return;
-    }
+    if (isDesignMode) station.dataset.designMode = 'true';
 
-    if (isReturningVisitor) {
+    if (!isDesignMode && isReturningVisitor) {
       gate?.setAttribute('data-intro-state', 'entered');
       return;
     }
 
     replay?.addEventListener('click', play);
-    enter?.addEventListener('click', () => openOverview(true));
+    enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => openOverview(true));
     window.addEventListener('motionchange', () => {
       if (gate?.dataset.introState === 'entered') return;
       if (document.documentElement.dataset.motion === 'reduced') {
