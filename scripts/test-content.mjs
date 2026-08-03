@@ -48,7 +48,7 @@ if (/membershipInference:\s*[0-9]/.test(explorer)) throw new Error('Unsupported 
 for (const behavior of ['pushState', 'popstate', 'hashchange', 'aria-current']) {
   if (!sectionDeck.includes(behavior)) throw new Error(`Section deck is missing ${behavior} behavior.`);
 }
-for (const behavior of ['data-typing-station', 'data-typed-name', "dataset.motion === 'reduced'", 'motionchange']) {
+for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typed-subtitle', 'data-typing-enter', "dataset.motion === 'reduced'", 'motionchange', 'openOverview']) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero typing animation is missing ${behavior} behavior.`);
 }
 

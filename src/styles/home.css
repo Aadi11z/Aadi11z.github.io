@@ -75,6 +75,46 @@ html.deck-ready #contact .contact-section {
   padding-block: clamp(1.4rem, 3.5vw, 3rem) 1.2rem;
 }
 
+.hero-intro,
+.hero-overview {
+  min-width: 0;
+}
+
+.hero[data-intro-state='active'] .hero-overview,
+.hero[data-intro-state='exiting'] .hero-overview,
+.hero[data-intro-state='entered'] .hero-intro {
+  display: none;
+}
+
+.hero[data-intro-state='exiting'] .hero-intro {
+  display: block;
+  animation: hero-intro-exit 260ms var(--ease-out) both;
+}
+
+.hero[data-intro-state='entered'] .hero-overview {
+  display: block;
+  animation: hero-overview-enter 320ms var(--ease-out) both;
+}
+
+@keyframes hero-intro-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes hero-overview-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .hero-rule {
   display: flex;
   justify-content: space-between;
@@ -247,10 +287,10 @@ html.deck-ready #contact .contact-section {
   color: var(--night-accent);
 }
 
-.typing-name {
+.typing-title {
   display: flex;
   min-width: 0;
-  align-items: center;
+  align-items: flex-end;
   margin: 0;
   color: var(--night-ink);
   font-family: var(--font-mono);
@@ -259,6 +299,25 @@ html.deck-ready #contact .contact-section {
   line-height: .95;
   letter-spacing: -.075em;
   white-space: nowrap;
+}
+
+.typing-lines {
+  display: grid;
+  min-width: 0;
+}
+
+.typing-lines > span {
+  min-height: .95em;
+}
+
+.typing-subtitle {
+  margin-top: .28em;
+  color: var(--night-accent-strong);
+  font-size: .48em;
+  font-weight: 520;
+  letter-spacing: .04em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .typing-prompt {
@@ -270,7 +329,7 @@ html.deck-ready #contact .contact-section {
 .typing-cursor {
   width: .08em;
   height: .84em;
-  margin-left: .12em;
+  margin: 0 0 .02em .12em;
   background: var(--night-accent-strong);
   opacity: 0;
 }
@@ -278,6 +337,49 @@ html.deck-ready #contact .contact-section {
 .typing-station[data-typing-state='typing'] .typing-cursor {
   opacity: 1;
   animation: typing-cursor 620ms steps(1, end) infinite;
+}
+
+.typing-enter {
+  display: none;
+  width: fit-content;
+  min-height: 52px;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: .85rem;
+  margin-top: 1.1rem;
+  padding: .38rem .85rem .38rem .38rem;
+  border: 1px solid var(--night-accent-strong);
+  background: transparent;
+  color: var(--night-ink);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  text-transform: uppercase;
+}
+
+.typing-station[data-enhanced='true'][data-typing-state='complete'] .typing-enter {
+  display: inline-grid;
+}
+
+.typing-enter-key {
+  display: grid;
+  min-width: 72px;
+  min-height: 38px;
+  place-items: center;
+  border: 1px solid var(--night-rule-strong);
+  background: var(--night-surface);
+  box-shadow: 0 3px 0 var(--night-rule-strong);
+  color: var(--night-accent-strong);
+}
+
+.typing-enter:hover,
+.typing-enter:focus-visible {
+  background: color-mix(in srgb, var(--night-accent-strong) 14%, transparent);
+}
+
+.typing-enter:active .typing-enter-key {
+  box-shadow: 0 1px 0 var(--night-rule-strong);
+  transform: translateY(2px);
 }
 
 .typing-readout {
@@ -895,7 +997,7 @@ html.deck-ready #contact .contact-section {
     min-height: 115px;
   }
 
-  .typing-name {
+  .typing-title {
     font-size: clamp(1.4rem, 6.8vw, 1.9rem);
     letter-spacing: -.08em;
   }

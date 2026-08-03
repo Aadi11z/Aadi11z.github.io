@@ -32,23 +32,32 @@ const rows: Key[][] = [
 ];
 ---
 
-<div class="typing-station manga-panel" data-typing-station data-name={profile.name} data-reveal>
+<div class="typing-station manga-panel" data-typing-station data-name={profile.name} data-subtitle="Portfolio" data-reveal aria-describedby="typing-station-description">
+  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}, Portfolio, before presenting an Enter Overview button.</p>
   <div class="typing-station-label meta">
-    <span>IDENTITY INPUT / 00</span>
+    <span>TYPEWRITER STRIP / 00</span>
     <button class="typing-replay" type="button" data-typing-replay aria-label="Replay the name typing animation">Replay ↻</button>
   </div>
 
   <div class="typing-display">
-    <span class="typing-command meta" aria-hidden="true">identity.initialize()</span>
-    <h1 id="hero-title" class="typing-name" aria-label={profile.name}>
+    <span class="typing-command meta" aria-hidden="true">portfolio.open()</span>
+    <div class="typing-title" aria-hidden="true">
       <span class="typing-prompt" aria-hidden="true">›</span>
-      <span data-typed-name aria-hidden="true">{profile.name}</span>
+      <span class="typing-lines">
+        <span data-typed-name>{profile.name}</span>
+        <span class="typing-subtitle" data-typed-subtitle>Portfolio</span>
+      </span>
       <span class="typing-cursor" aria-hidden="true"></span>
-    </h1>
-    <div class="typing-readout meta" aria-hidden="true">
-      <span>PROFILE / ACTIVE</span>
-      <span>ML · DATA · SYSTEMS</span>
     </div>
+    <button class="typing-enter" type="button" data-typing-enter>
+      <span class="typing-enter-key">Enter ↵</span>
+      <span>Open Overview</span>
+    </button>
+    <div class="typing-readout meta" aria-hidden="true">
+      <span data-typing-readout>INPUT / WAITING</span>
+      <span>TYPE · CONFIRM · ENTER</span>
+    </div>
+    <p class="visually-hidden" aria-live="polite" data-typing-status></p>
   </div>
 
   <div class="keyboard" aria-hidden="true">
@@ -65,8 +74,8 @@ const rows: Key[][] = [
 
   <div class="typing-station-caption">
     <span class="annotation-mark" aria-hidden="true">↳</span>
-    <span>One identity, expressed through models, evidence, markets, and software.</span>
-    <span class="meta">17 KEYS / ONE PASS</span>
+    <span>Type the identity, then press Enter to open the portfolio overview.</span>
+    <span class="meta">26 CHAR / ENTER</span>
   </div>
 </div>
 
@@ -75,8 +84,16 @@ const rows: Key[][] = [
 
   stations.forEach((station) => {
     const output = station.querySelector<HTMLElement>('[data-typed-name]');
+    const subtitleOutput = station.querySelector<HTMLElement>('[data-typed-subtitle]');
     const replay = station.querySelector<HTMLButtonElement>('[data-typing-replay]');
+    const enter = station.querySelector<HTMLButtonElement>('[data-typing-enter]');
+    const readout = station.querySelector<HTMLElement>('[data-typing-readout]');
+    const status = station.querySelector<HTMLElement>('[data-typing-status]');
+    const gate = station.closest<HTMLElement>('[data-hero-gate]');
+    const overview = gate?.querySelector<HTMLElement>('[data-overview-content]');
     const name = station.dataset.name ?? '';
+    const subtitle = station.dataset.subtitle ?? '';
+    const sequence = `${name}\n${subtitle}`;
     let timers: number[] = [];
     let hasPlayed = false;
 
@@ -86,50 +103,78 @@ const rows: Key[][] = [
       station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
     };
 
-    const showCompleteName = () => {
+    const showCompleteTitle = () => {
       clearTimers();
       if (output) output.textContent = name;
+      if (subtitleOutput) subtitleOutput.textContent = subtitle;
       station.dataset.typingState = 'complete';
+      if (readout) readout.textContent = 'INPUT / COMPLETE';
+      if (status) status.textContent = 'Typing complete. Activate Enter Overview to continue.';
+      if (gate?.dataset.introState !== 'entered') gate?.setAttribute('data-intro-state', 'active');
     };
 
     const play = () => {
-      if (!output || document.documentElement.dataset.motion === 'reduced') {
-        showCompleteName();
+      if (!output || !subtitleOutput || document.documentElement.dataset.motion === 'reduced') {
+        showCompleteTitle();
         return;
       }
 
       clearTimers();
       hasPlayed = true;
       output.textContent = '';
+      subtitleOutput.textContent = '';
       station.dataset.typingState = 'typing';
+      gate?.setAttribute('data-intro-state', 'active');
+      if (readout) readout.textContent = 'INPUT / TYPING';
+      if (status) status.textContent = 'Typing Aaditya Bhatnagar, Portfolio.';
+      let currentOutput = output;
 
-      Array.from(name).forEach((character, index) => {
+      Array.from(sequence).forEach((character, index) => {
         const timer = window.setTimeout(() => {
-          output.textContent += character;
-          const keyValue = character === ' ' ? 'space' : character.toLowerCase();
+          if (character === '\n') currentOutput = subtitleOutput;
+          else currentOutput.textContent += character;
+          const keyValue = character === '\n' ? 'enter' : character === ' ' ? 'space' : character.toLowerCase();
           const key = station.querySelector<HTMLElement>(`[data-key="${keyValue}"]`);
           key?.classList.add('is-pressed');
           const releaseTimer = window.setTimeout(() => key?.classList.remove('is-pressed'), 115);
           timers.push(releaseTimer);
 
-          if (index === name.length - 1) station.dataset.typingState = 'complete';
+          if (index === sequence.length - 1) showCompleteTitle();
         }, 480 + index * 105);
         timers.push(timer);
       });
     };
 
+    const openOverview = () => {
+      if (!gate || !overview) return;
+      clearTimers();
+      gate.dataset.introState = 'exiting';
+      const finish = () => {
+        gate.dataset.introState = 'entered';
+        const heading = overview.querySelector<HTMLElement>('h2');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus({ preventScroll: true });
+      };
+      if (document.documentElement.dataset.motion === 'reduced') finish();
+      else timers.push(window.setTimeout(finish, 260));
+    };
+
     station.dataset.enhanced = 'true';
     replay?.addEventListener('click', play);
+    enter?.addEventListener('click', openOverview);
     window.addEventListener('motionchange', () => {
-      if (document.documentElement.dataset.motion === 'reduced') showCompleteName();
+      if (gate?.dataset.introState === 'entered') return;
+      if (document.documentElement.dataset.motion === 'reduced') showCompleteTitle();
       else play();
     });
 
     if (document.documentElement.dataset.motion === 'reduced') {
-      showCompleteName();
+      showCompleteTitle();
     } else {
       if (output) output.textContent = '';
+      if (subtitleOutput) subtitleOutput.textContent = '';
       station.dataset.typingState = 'waiting';
+      gate?.setAttribute('data-intro-state', 'active');
     }
 
     if (document.documentElement.dataset.motion !== 'reduced' && 'IntersectionObserver' in window) {
