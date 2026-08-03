@@ -1,0 +1,33 @@
+---
+interface Props { compact?: boolean; }
+const { compact = false } = Astro.props;
+---
+
+<div class:list={['motion-control', compact && 'motion-control-compact']} role="group" aria-label="Motion preference" data-motion-control>
+  <span class="motion-control-label" aria-hidden="true">Motion</span>
+  <button class="motion-option" type="button" data-motion-option="full" aria-pressed="false">Full</button>
+  <button class="motion-option" type="button" data-motion-option="reduced" aria-pressed="false">Reduced</button>
+</div>
+
+<script>
+  const controls = document.querySelectorAll('[data-motion-control]');
+  const updateMotionControls = () => {
+    const current = document.documentElement.dataset.motion ?? 'full';
+    controls.forEach((control) => {
+      control.querySelectorAll<HTMLElement>('[data-motion-option]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.motionOption === current));
+      });
+    });
+  };
+  controls.forEach((control) => {
+    control.querySelectorAll<HTMLElement>('[data-motion-option]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const next = button.dataset.motionOption === 'reduced' ? 'reduced' : 'full';
+        document.documentElement.dataset.motion = next;
+        try { localStorage.setItem('motion', next); } catch { /* Storage may be disabled. */ }
+        updateMotionControls();
+      });
+    });
+  });
+  updateMotionControls();
+</script>
