@@ -93,7 +93,7 @@ for (const section of ['overview', 'work', 'research', 'experience', 'about', 'c
   }
 }
 if ((homeHtml.match(/<(?:div|section)\b[^>]*\bdata-deck-panel\b/g) ?? []).length !== 6) throw new Error('Homepage must render exactly six section panels');
-if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-name') || !homeHtml.includes('data-typed-subtitle') || !homeHtml.includes('data-typing-enter')) {
+if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-name') || !homeHtml.includes('keyboard-chassis') || !homeHtml.includes('data-typing-enter')) {
   throw new Error('Accessible hero typing station is missing');
 }
 if (!homeHtml.includes('data-hero-gate') || !homeHtml.includes('data-overview-content')) throw new Error('Hero intro gate or Overview fallback is missing');

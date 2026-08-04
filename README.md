@@ -83,6 +83,7 @@ Explorer observations require an explicit provenance value. Missing experiment r
 - `src/styles/tokens.css` — color, spacing, type, and motion tokens
 - `src/styles/global.css` — reset, typography, and shared utilities
 - `src/styles/layout.css` — navigation, footer, résumé, and 404 layouts
+- `src/styles/hero.css` — floating keyboard intro, intro states, and Overview composition
 - `src/styles/home.css` — homepage sections
 - `src/styles/projects.css` — archive, project cards, and case studies
 - `src/styles/research.css` — research-note presentation

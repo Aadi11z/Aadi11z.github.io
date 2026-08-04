@@ -1,7 +1,7 @@
 ---
 import { profile } from '@/data/profile';
 
-type Key = { label: string; value: string; size?: 'wide' | 'wider' | 'space' };
+type Key = { label: string; value: string; size?: 'wide' | 'wider' | 'space'; enter?: boolean };
 
 const rows: Key[][] = [
   [
@@ -17,7 +17,7 @@ const rows: Key[][] = [
   [
     { label: 'caps', value: 'capslock', size: 'wider' },
     ...'ASDFGHJKL'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
-    { label: 'return', value: 'enter', size: 'wider' },
+    { label: 'Enter ↵', value: 'enter', size: 'wider', enter: true },
   ],
   [
     { label: 'shift', value: 'shift', size: 'wider' },
@@ -26,57 +26,71 @@ const rows: Key[][] = [
   ],
   [
     { label: 'command', value: 'meta', size: 'wide' },
+    { label: 'option', value: 'option', size: 'wide' },
     { label: '', value: 'space', size: 'space' },
-    { label: 'enter', value: 'enter-bottom', size: 'wide' },
+    { label: 'option', value: 'option-right', size: 'wide' },
+    { label: 'command', value: 'meta-right', size: 'wide' },
   ],
 ];
 ---
 
-<div class="typing-station manga-panel" data-typing-station data-name={profile.name} data-subtitle="Portfolio" aria-describedby="typing-station-description">
-  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}, Portfolio, presses Enter, and opens the portfolio overview.</p>
-  <div class="typing-station-label meta">
-    <span>TYPEWRITER STRIP / 00</span>
-    <button class="typing-replay" type="button" data-typing-replay aria-label="Replay the name typing animation">Replay ↻</button>
+<div class="typing-station" data-typing-station data-name={profile.name} aria-describedby="typing-station-description">
+  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}. Press Enter to open the portfolio overview.</p>
+
+  <div class="typing-stage-meta meta" aria-hidden="true">
+    <span>IDENTITY SEQUENCE / 00</span>
+    <span>INPUT ACTIVE</span>
   </div>
 
-  <div class="typing-display">
-    <span class="typing-command meta" aria-hidden="true">portfolio.open()</span>
+  <div class="typing-nameplate">
+    <span class="typing-command meta" aria-hidden="true">portfolio.identity</span>
     <div class="typing-title" aria-hidden="true">
-      <span class="typing-prompt" aria-hidden="true">›</span>
-      <span class="typing-lines">
-        <span data-typed-name>{profile.name}</span>
-        <span class="typing-subtitle" data-typed-subtitle>Portfolio</span>
-      </span>
+      <span data-typed-name>{profile.name}</span>
       <span class="typing-cursor" aria-hidden="true"></span>
     </div>
-    <button class="typing-enter" type="button" data-typing-enter aria-label="Open the portfolio overview now">
-      <span class="typing-enter-key">Enter ↵</span>
-      <span data-enter-label>Open Overview</span>
-    </button>
-    <div class="typing-readout meta" aria-hidden="true">
-      <span data-typing-readout>INPUT / WAITING</span>
-      <span>TYPE · CONFIRM · ENTER</span>
-    </div>
-    <p class="visually-hidden" aria-live="polite" data-typing-status></p>
+    <span class="typing-subtitle">Portfolio</span>
   </div>
 
-  <div class="keyboard" aria-hidden="true">
-    {rows.map((row) => (
-      <div class="keyboard-row">
-        {row.map((key) => (
-          <span class:list={['keyboard-key', key.size && `keyboard-key-${key.size}`]} data-key={key.value}>
-            {key.label}
-          </span>
-        ))}
+  <div class="keyboard-scene">
+    <div class="keyboard-floor-glow" aria-hidden="true"></div>
+    <div class="keyboard-float">
+      <div class="keyboard-chassis">
+        <div class="keyboard-chassis-edge" aria-hidden="true"></div>
+        <div class="keyboard" role="group" aria-label="Animated mechanical keyboard">
+          {rows.map((row) => (
+            <div class="keyboard-row" role="presentation">
+              {row.map((key) => key.enter ? (
+                <button
+                  class:list={['keyboard-key', 'keyboard-enter', key.size && `keyboard-key-${key.size}`]}
+                  type="button"
+                  data-key={key.value}
+                  data-typing-enter
+                  aria-label="Open the portfolio overview"
+                >
+                  <span>{key.label}</span>
+                  <small data-enter-label>Open</small>
+                </button>
+              ) : (
+                <span class:list={['keyboard-key', key.size && `keyboard-key-${key.size}`]} data-key={key.value} aria-hidden="true">
+                  {key.label}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
-    ))}
+    </div>
   </div>
 
-  <div class="typing-station-caption">
-    <span class="annotation-mark" aria-hidden="true">↳</span>
-    <span>The sequence types the identity, confirms with Enter, then opens the overview.</span>
-    <span class="meta">26 CHAR / ENTER</span>
+  <div class="typing-controls">
+    <div class="typing-instruction">
+      <span class="annotation-mark" aria-hidden="true">↳</span>
+      <span>Press Enter to open Overview</span>
+    </div>
+    <button class="typing-replay" type="button" data-typing-replay aria-label="Replay the name typing animation">Replay ↻</button>
+    <span class="typing-readout meta" data-typing-readout aria-hidden="true">INPUT / WAITING</span>
   </div>
+  <p class="visually-hidden" aria-live="polite" data-typing-status></p>
 </div>
 
 <script>
@@ -84,7 +98,6 @@ const rows: Key[][] = [
 
   stations.forEach((station) => {
     const output = station.querySelector<HTMLElement>('[data-typed-name]');
-    const subtitleOutput = station.querySelector<HTMLElement>('[data-typed-subtitle]');
     const replay = station.querySelector<HTMLButtonElement>('[data-typing-replay]');
     const enter = station.querySelector<HTMLButtonElement>('[data-typing-enter]');
     const enterLabel = station.querySelector<HTMLElement>('[data-enter-label]');
@@ -93,8 +106,7 @@ const rows: Key[][] = [
     const gate = station.closest<HTMLElement>('[data-hero-gate]');
     const overview = gate?.querySelector<HTMLElement>('[data-overview-content]');
     const name = station.dataset.name ?? '';
-    const subtitle = station.dataset.subtitle ?? '';
-    const sequence = `${name}\n${subtitle}`;
+    const sequence = Array.from(name);
     const typingStartDelay = 250;
     const characterDelay = 125;
     const completedTitleHold = 1200;
@@ -116,6 +128,7 @@ const rows: Key[][] = [
     const openOverview = (focusHeading = false) => {
       if (!gate || !overview || gate.dataset.introState === 'entered') return;
       clearTimers();
+      if (enter) enter.disabled = true;
       try {
         if (introStorageKey) localStorage.setItem(introStorageKey, 'seen');
       } catch { /* Storage may be disabled. */ }
@@ -131,23 +144,23 @@ const rows: Key[][] = [
       else timers.push(window.setTimeout(finish, 260));
     };
 
-    const pressEnterAndOpen = () => {
+    const pressEnterAndOpen = (focusHeading = false) => {
       if (gate?.dataset.introState === 'entered') return;
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
-      if (enterLabel) enterLabel.textContent = 'Opening Overview';
+      if (enterLabel) enterLabel.textContent = 'Opening';
       if (readout) readout.textContent = 'INPUT / ENTER';
       if (status) status.textContent = 'Enter pressed. Opening the portfolio overview.';
-      station.querySelectorAll<HTMLElement>('[data-key="enter"], [data-key="enter-bottom"]').forEach((key) => key.classList.add('is-pressed'));
-      timers.push(window.setTimeout(() => openOverview(), enterPressHold));
+      enter?.classList.add('is-pressed');
+      timers.push(window.setTimeout(() => openOverview(focusHeading), enterPressHold));
     };
 
     const showCompleteTitle = (autoAdvance = true) => {
       clearTimers();
       if (output) output.textContent = name;
-      if (subtitleOutput) subtitleOutput.textContent = subtitle;
       station.dataset.typingState = 'complete';
-      if (enterLabel) enterLabel.textContent = 'Open Overview';
+      if (enter) enter.disabled = false;
+      if (enterLabel) enterLabel.textContent = 'Open';
       if (readout) readout.textContent = isDesignMode ? 'DESIGN / HOLD' : 'INPUT / COMPLETE';
       if (status) status.textContent = isDesignMode
         ? 'Design mode complete. Automatic Enter and the Overview transition are disabled.'
@@ -164,9 +177,9 @@ const rows: Key[][] = [
       station.dataset.enterState = 'pressed';
       if (readout) readout.textContent = 'DESIGN / ENTER';
       if (status) status.textContent = 'Enter key preview. The Overview transition remains disabled in design mode.';
-      station.querySelectorAll<HTMLElement>('[data-key="enter"], [data-key="enter-bottom"]').forEach((key) => key.classList.add('is-pressed'));
+      enter?.classList.add('is-pressed');
       timers.push(window.setTimeout(() => {
-        station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
+        enter?.classList.remove('is-pressed');
         station.removeAttribute('data-enter-state');
         station.dataset.typingState = 'complete';
         if (readout) readout.textContent = 'DESIGN / HOLD';
@@ -174,39 +187,48 @@ const rows: Key[][] = [
       }, enterPressHold));
     };
 
+    const pressCharacterKey = (character: string) => {
+      const keyValue = character === ' ' ? 'space' : character.toLowerCase();
+      const keys = Array.from(station.querySelectorAll<HTMLElement>(`[data-key="${keyValue}"]`));
+      if (character !== character.toLowerCase()) {
+        const shift = station.querySelector<HTMLElement>('[data-key="shift"]');
+        if (shift) keys.push(shift);
+      }
+      keys.forEach((key) => key.classList.add('is-pressed'));
+      const releaseTimer = window.setTimeout(() => keys.forEach((key) => key.classList.remove('is-pressed')), 115);
+      timers.push(releaseTimer);
+    };
+
     const play = () => {
-      if (!output || !subtitleOutput || document.documentElement.dataset.motion === 'reduced') {
+      if (!output || document.documentElement.dataset.motion === 'reduced') {
         showCompleteTitle(false);
         return;
       }
 
       clearTimers();
       hasPlayed = true;
+      if (enter) enter.disabled = true;
       output.textContent = '';
-      subtitleOutput.textContent = '';
       station.dataset.typingState = 'typing';
       gate?.setAttribute('data-intro-state', 'active');
       if (readout) readout.textContent = 'INPUT / TYPING';
-      if (status) status.textContent = 'Typing Aaditya Bhatnagar, Portfolio.';
-      let currentOutput = output;
+      if (status) status.textContent = 'Typing Aaditya Bhatnagar.';
 
-      Array.from(sequence).forEach((character, index) => {
+      sequence.forEach((character, index) => {
         const timer = window.setTimeout(() => {
-          if (character === '\n') currentOutput = subtitleOutput;
-          else currentOutput.textContent += character;
-          const keyValue = character === '\n' ? 'enter' : character === ' ' ? 'space' : character.toLowerCase();
-          const key = station.querySelector<HTMLElement>(`[data-key="${keyValue}"]`);
-          key?.classList.add('is-pressed');
-          const releaseTimer = window.setTimeout(() => key?.classList.remove('is-pressed'), 115);
-          timers.push(releaseTimer);
+          output.textContent += character;
+          pressCharacterKey(character);
 
-          if (index === sequence.length - 1) showCompleteTitle(!isDesignMode);
+          if (index === sequence.length - 1) {
+            timers.push(window.setTimeout(() => showCompleteTitle(!isDesignMode), 125));
+          }
         }, typingStartDelay + index * characterDelay);
         timers.push(timer);
       });
     };
 
     station.dataset.enhanced = 'true';
+    if (enter) enter.disabled = true;
     if (isDesignMode) station.dataset.designMode = 'true';
 
     if (!isDesignMode && isReturningVisitor) {
@@ -215,7 +237,15 @@ const rows: Key[][] = [
     }
 
     replay?.addEventListener('click', play);
-    enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => openOverview(true));
+    enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => pressEnterAndOpen(true));
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || event.repeat || station.dataset.typingState !== 'complete') return;
+      if (event.target === enter) return;
+      if (event.target instanceof Element && event.target.closest('a, button, input, select, textarea')) return;
+      event.preventDefault();
+      if (isDesignMode) previewEnterPress();
+      else pressEnterAndOpen(true);
+    });
     window.addEventListener('motionchange', () => {
       if (gate?.dataset.introState === 'entered') return;
       if (document.documentElement.dataset.motion === 'reduced') {
@@ -228,7 +258,6 @@ const rows: Key[][] = [
       showCompleteTitle(false);
     } else {
       if (output) output.textContent = '';
-      if (subtitleOutput) subtitleOutput.textContent = '';
       station.dataset.typingState = 'waiting';
       gate?.setAttribute('data-intro-state', 'active');
     }

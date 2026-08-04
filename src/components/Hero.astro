@@ -6,29 +6,24 @@ import HeroVisual from './visuals/HeroVisual.astro';
 ---
 
 <section class="hero shell" aria-labelledby="hero-title" data-hero-gate>
-  <h1 id="hero-title" class="visually-hidden">{profile.name} — Portfolio</h1>
-
   <div class="hero-intro" data-hero-intro>
-    <div class="hero-rule" aria-hidden="true">
-      <span>Portfolio / Identity sequence</span>
-      <span>Type / Confirm / Enter</span>
-    </div>
     <HeroVisual />
   </div>
 
   <div class="hero-overview" data-overview-content>
     <div class="hero-rule" aria-hidden="true">
-      <span>Overview / Aaditya Bhatnagar</span>
-      <span>Dubai / 2026</span>
+      <span>Overview / 00</span>
+      <span>Dubai, UAE / September 2026</span>
     </div>
 
     <div class="hero-layout">
       <div class="hero-main" data-reveal>
         <span class="eyebrow">ML / Data / Systems</span>
+        <h1 id="hero-title" class="hero-name">{profile.name}</h1>
         <h2 id="overview-title" class="hero-headline">{profile.headline}</h2>
       </div>
       <div class="hero-support" data-reveal>
-        <p class="status-line"><span aria-hidden="true">●</span> {profile.location} · Graduating {profile.graduation}</p>
+        <p class="status-line"><span aria-hidden="true">●</span> {profile.location} · Open to graduate opportunities</p>
         <p class="hero-copy">{profile.description}</p>
         <div class="button-row hero-actions">
           <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">→</span></a>
@@ -38,6 +33,25 @@ import HeroVisual from './visuals/HeroVisual.astro';
         <SocialLinks />
       </div>
     </div>
+
+    <dl class="hero-evidence" aria-label="Profile summary">
+      <div>
+        <dt>Education</dt>
+        <dd>{profile.university}</dd>
+      </div>
+      <div>
+        <dt>Degree</dt>
+        <dd>BE Computer Science</dd>
+      </div>
+      <div>
+        <dt>CGPA</dt>
+        <dd>{profile.cgpa}</dd>
+      </div>
+      <div>
+        <dt>Focus</dt>
+        <dd>Reliable AI · Quant systems</dd>
+      </div>
+    </dl>
 
     <div class="hero-footnote">
       <span class="availability-dot" aria-hidden="true"></span>

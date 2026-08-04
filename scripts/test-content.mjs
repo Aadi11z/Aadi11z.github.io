@@ -7,6 +7,7 @@ const requiredFiles = [
   'src/data/playgrounds/unlearning.ts',
   'src/layouts/BaseLayout.astro',
   'src/components/Hero.astro',
+  'src/styles/hero.css',
   'src/components/MotionPreference.astro',
   'src/components/playgrounds/UnlearningExplorer.astro',
   'src/scripts/section-deck.ts',
@@ -51,7 +52,7 @@ if (/membershipInference:\s*[0-9]/.test(explorer)) throw new Error('Unsupported 
 for (const behavior of ['pushState', 'popstate', 'hashchange', 'aria-current']) {
   if (!sectionDeck.includes(behavior)) throw new Error(`Section deck is missing ${behavior} behavior.`);
 }
-for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typed-subtitle', 'data-typing-enter', "dataset.motion === 'reduced'", 'motionchange', 'openOverview', 'pressEnterAndOpen', 'data-enter-state']) {
+for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typing-enter', 'keyboard-chassis', 'pressCharacterKey', "dataset.motion === 'reduced'", 'motionchange', 'openOverview', 'pressEnterAndOpen', 'data-enter-state']) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero typing animation is missing ${behavior} behavior.`);
 }
 if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js[data-intro-visit='first'] .hero:not([data-intro-state]) .hero-overview")) {
