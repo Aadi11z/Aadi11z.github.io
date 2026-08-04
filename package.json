@@ -8,12 +8,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "dev:normal": "PUBLIC_INTRO_MODE=normal astro dev",
     "dev:design": "PUBLIC_INTRO_MODE=design astro dev",
-    "dev:recruiter-preview": "PUBLIC_INTRO_MODE=normal PUBLIC_INTRO_FORCE=true astro dev",
     "build": "astro build",
-    "build:normal": "PUBLIC_INTRO_MODE=normal astro build",
-    "build:design": "PUBLIC_INTRO_MODE=design astro build",
     "preview": "astro preview",
     "check": "astro check",
     "lint": "astro check",

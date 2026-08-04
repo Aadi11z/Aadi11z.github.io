@@ -22,26 +22,19 @@ npm run dev
 
 Open `http://localhost:4321/`. Local development uses the root path unless `PUBLIC_BASE_PATH` is explicitly set.
 
-The hero intro has two explicit modes:
+The hero intro has two modes:
 
 ```bash
+npm run dev
 npm run dev:design
-npm run dev:normal
-npm run dev:recruiter-preview
 ```
 
-- `design` runs the typing animation, then holds on the completed Enter screen. Enter previews its pressed state without opening Overview. Use this while refining the animation.
-- `normal` runs the recruiter-facing flow: typing completes, Enter is pressed automatically, and Overview opens. Returning visitors skip the intro after the first completed visit.
-- `recruiter-preview` uses the complete normal flow but forces the animation on every refresh, making it the easiest way to review exactly what a first-time visitor sees.
+- `npm run dev` is the normal visitor flow: typing completes, Enter is pressed automatically, and Overview opens. Returning visitors skip the intro after the first completed visit.
+- `npm run dev:design` is the animation-debug flow: typing runs and then holds on the completed keyboard. Enter previews its pressed state without opening Overview.
 
-Plain `npm run dev` defaults to design mode. Plain `npm run build` defaults to normal mode, so production cannot accidentally inherit the development default. You can also select either mode directly:
+`npm run build` always defaults to normal production mode. Restart the development server when switching modes.
 
-```bash
-PUBLIC_INTRO_MODE=design npm run dev
-PUBLIC_INTRO_MODE=normal npm run build
-```
-
-Restart the development server after changing modes because the mode is resolved when Astro starts. Normal mode records the completed intro under `aaditya-portfolio-intro-v1` in browser `localStorage`; design mode ignores and does not update that value.
+Normal mode records the completed intro under `aaditya-portfolio-intro-v1` in browser `localStorage`; design mode ignores and does not update that value.
 
 ## Validation
 

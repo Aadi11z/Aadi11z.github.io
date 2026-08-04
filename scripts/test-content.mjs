@@ -34,6 +34,7 @@ const sectionDeck = readFileSync('src/scripts/section-deck.ts', 'utf8');
 const heroVisual = readFileSync('src/components/visuals/HeroVisual.astro', 'utf8');
 const baseLayout = readFileSync('src/layouts/BaseLayout.astro', 'utf8');
 const homeStyles = readFileSync('src/styles/home.css', 'utf8');
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const forbidden = ['example.com', 'your-repo', 'placeholder', 'lorem ipsum'];
 for (const value of forbidden) {
   if (projects.toLowerCase().includes(value)) throw new Error(`Placeholder content found: ${value}`);
@@ -61,8 +62,17 @@ if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js
 if (!site.includes("introStorageKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("introSeen ? 'returning' : 'first'")) {
   throw new Error('Versioned first-visit state is missing from the pre-paint initialization.');
 }
-for (const behavior of ['PUBLIC_INTRO_MODE', 'PUBLIC_INTRO_FORCE', 'introMode', 'forceIntroPreview', 'isDesignMode', 'previewEnterPress', "showCompleteTitle(!isDesignMode)"]) {
+for (const behavior of ['PUBLIC_INTRO_MODE', 'introMode', 'isDesignMode', 'previewEnterPress', "showCompleteTitle(!isDesignMode)"]) {
   if (!`${site}\n${baseLayout}\n${heroVisual}`.includes(behavior)) throw new Error(`Explicit intro modes are missing: ${behavior}`);
+}
+if (packageJson.scripts.dev !== 'astro dev' || packageJson.scripts['dev:design'] !== 'PUBLIC_INTRO_MODE=design astro dev') {
+  throw new Error('The normal and design intro commands are not configured correctly.');
+}
+for (const removedMode of ['dev:normal', 'dev:recruiter-preview', 'build:normal', 'build:design']) {
+  if (packageJson.scripts[removedMode]) throw new Error(`Removed intro mode returned: ${removedMode}`);
+}
+for (const removedControl of ['data-typing-replay', 'data-typing-readout', 'typing-stage-meta', 'typing-subtitle']) {
+  if (heroVisual.includes(removedControl)) throw new Error(`Removed intro control returned: ${removedControl}`);
 }
 for (const behavior of ["dataset.introVisit === 'returning'", "localStorage.setItem(introStorageKey, 'seen')"]) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero first-visit behavior is missing: ${behavior}`);

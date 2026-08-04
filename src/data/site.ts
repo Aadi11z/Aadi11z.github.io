@@ -6,8 +6,7 @@ export type IntroMode = 'normal' | 'design';
 const requestedIntroMode = import.meta.env.PUBLIC_INTRO_MODE;
 export const introMode: IntroMode = requestedIntroMode === 'normal' || requestedIntroMode === 'design'
   ? requestedIntroMode
-  : (import.meta.env.DEV ? 'design' : 'normal');
-export const forceIntroPreview = import.meta.env.PUBLIC_INTRO_FORCE === 'true';
+  : 'normal';
 
 export const siteConfig = {
   url: (import.meta.env.PUBLIC_SITE_URL ?? defaultSiteUrl).replace(/\/$/, ''),

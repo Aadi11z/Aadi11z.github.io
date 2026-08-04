@@ -37,18 +37,11 @@ const rows: Key[][] = [
 <div class="typing-station" data-typing-station data-name={profile.name} aria-describedby="typing-station-description">
   <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}. Press Enter to open the portfolio overview.</p>
 
-  <div class="typing-stage-meta meta" aria-hidden="true">
-    <span>IDENTITY SEQUENCE / 00</span>
-    <span>INPUT ACTIVE</span>
-  </div>
-
   <div class="typing-nameplate">
-    <span class="typing-command meta" aria-hidden="true">portfolio.identity</span>
     <div class="typing-title" aria-hidden="true">
       <span data-typed-name>{profile.name}</span>
       <span class="typing-cursor" aria-hidden="true"></span>
     </div>
-    <span class="typing-subtitle">Portfolio</span>
   </div>
 
   <div class="keyboard-scene">
@@ -68,7 +61,6 @@ const rows: Key[][] = [
                   aria-label="Open the portfolio overview"
                 >
                   <span>{key.label}</span>
-                  <small data-enter-label>Open</small>
                 </button>
               ) : (
                 <span class:list={['keyboard-key', key.size && `keyboard-key-${key.size}`]} data-key={key.value} aria-hidden="true">
@@ -82,13 +74,9 @@ const rows: Key[][] = [
     </div>
   </div>
 
-  <div class="typing-controls">
-    <div class="typing-instruction">
-      <span class="annotation-mark" aria-hidden="true">↳</span>
-      <span>Press Enter to open Overview</span>
-    </div>
-    <button class="typing-replay" type="button" data-typing-replay aria-label="Replay the name typing animation">Replay ↻</button>
-    <span class="typing-readout meta" data-typing-readout aria-hidden="true">INPUT / WAITING</span>
+  <div class="typing-instruction">
+    <span class="annotation-mark" aria-hidden="true">↳</span>
+    <span>Press Enter to open Overview</span>
   </div>
   <p class="visually-hidden" aria-live="polite" data-typing-status></p>
 </div>
@@ -98,10 +86,7 @@ const rows: Key[][] = [
 
   stations.forEach((station) => {
     const output = station.querySelector<HTMLElement>('[data-typed-name]');
-    const replay = station.querySelector<HTMLButtonElement>('[data-typing-replay]');
     const enter = station.querySelector<HTMLButtonElement>('[data-typing-enter]');
-    const enterLabel = station.querySelector<HTMLElement>('[data-enter-label]');
-    const readout = station.querySelector<HTMLElement>('[data-typing-readout]');
     const status = station.querySelector<HTMLElement>('[data-typing-status]');
     const gate = station.closest<HTMLElement>('[data-hero-gate]');
     const overview = gate?.querySelector<HTMLElement>('[data-overview-content]');
@@ -148,8 +133,6 @@ const rows: Key[][] = [
       if (gate?.dataset.introState === 'entered') return;
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
-      if (enterLabel) enterLabel.textContent = 'Opening';
-      if (readout) readout.textContent = 'INPUT / ENTER';
       if (status) status.textContent = 'Enter pressed. Opening the portfolio overview.';
       enter?.classList.add('is-pressed');
       timers.push(window.setTimeout(() => openOverview(focusHeading), enterPressHold));
@@ -160,8 +143,6 @@ const rows: Key[][] = [
       if (output) output.textContent = name;
       station.dataset.typingState = 'complete';
       if (enter) enter.disabled = false;
-      if (enterLabel) enterLabel.textContent = 'Open';
-      if (readout) readout.textContent = isDesignMode ? 'DESIGN / HOLD' : 'INPUT / COMPLETE';
       if (status) status.textContent = isDesignMode
         ? 'Design mode complete. Automatic Enter and the Overview transition are disabled.'
         : autoAdvance
@@ -175,14 +156,12 @@ const rows: Key[][] = [
       clearTimers();
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
-      if (readout) readout.textContent = 'DESIGN / ENTER';
       if (status) status.textContent = 'Enter key preview. The Overview transition remains disabled in design mode.';
       enter?.classList.add('is-pressed');
       timers.push(window.setTimeout(() => {
         enter?.classList.remove('is-pressed');
         station.removeAttribute('data-enter-state');
         station.dataset.typingState = 'complete';
-        if (readout) readout.textContent = 'DESIGN / HOLD';
         if (status) status.textContent = 'Design mode complete. Automatic Enter and the Overview transition are disabled.';
       }, enterPressHold));
     };
@@ -211,7 +190,6 @@ const rows: Key[][] = [
       output.textContent = '';
       station.dataset.typingState = 'typing';
       gate?.setAttribute('data-intro-state', 'active');
-      if (readout) readout.textContent = 'INPUT / TYPING';
       if (status) status.textContent = 'Typing Aaditya Bhatnagar.';
 
       sequence.forEach((character, index) => {
@@ -236,7 +214,6 @@ const rows: Key[][] = [
       return;
     }
 
-    replay?.addEventListener('click', play);
     enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => pressEnterAndOpen(true));
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' || event.repeat || station.dataset.typingState !== 'complete') return;
