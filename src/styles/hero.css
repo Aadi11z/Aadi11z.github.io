@@ -183,7 +183,7 @@
     0 16px 0 #020307,
     0 42px 70px rgb(0 0 0 / 72%),
     -24px 34px 70px rgb(42 71 169 / 14%);
-  transform: rotateX(51deg) rotateZ(-4.5deg);
+  transform: rotateX(38deg) rotateZ(-3.25deg);
   transform-origin: center;
   transform-style: preserve-3d;
 }
@@ -530,7 +530,7 @@
 @keyframes keyboard-confirm {
   to {
     filter: brightness(1.18);
-    transform: rotateX(56deg) rotateZ(-4.5deg) translateY(14px) scale(.985);
+    transform: rotateX(44deg) rotateZ(-3.25deg) translateY(14px) scale(.985);
   }
 }
 
@@ -579,7 +579,7 @@
   }
 
   .keyboard-chassis {
-    transform: rotateX(47deg) rotateZ(-3.5deg);
+    transform: rotateX(35deg) rotateZ(-2.75deg);
   }
 }
 
@@ -616,7 +616,7 @@
   .keyboard-chassis {
     padding: .5rem;
     border-radius: 9px;
-    transform: rotateX(42deg) rotateZ(-2.5deg);
+    transform: rotateX(31deg) rotateZ(-2deg);
   }
 
   .keyboard,

@@ -97,7 +97,7 @@ if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-
   throw new Error('Accessible hero typing station is missing');
 }
 if (!homeHtml.includes('data-hero-gate') || !homeHtml.includes('data-overview-content')) throw new Error('Hero intro gate or Overview fallback is missing');
-if (!homeHtml.includes('data-intro-storage-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes(`data-intro-mode="${expectedIntroMode}"`) || !homeHtml.includes("dataset.introVisit")) {
+if (!homeHtml.includes('data-intro-storage-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes(`data-intro-mode="${expectedIntroMode}"`) || !homeHtml.includes('data-intro-force=') || !homeHtml.includes("dataset.introVisit")) {
   throw new Error('Generated homepage is missing first-visit intro initialization.');
 }
 

@@ -27,10 +27,12 @@ The hero intro has two explicit modes:
 ```bash
 npm run dev:design
 npm run dev:normal
+npm run dev:recruiter-preview
 ```
 
 - `design` runs the typing animation, then holds on the completed Enter screen. Enter previews its pressed state without opening Overview. Use this while refining the animation.
 - `normal` runs the recruiter-facing flow: typing completes, Enter is pressed automatically, and Overview opens. Returning visitors skip the intro after the first completed visit.
+- `recruiter-preview` uses the complete normal flow but forces the animation on every refresh, making it the easiest way to review exactly what a first-time visitor sees.
 
 Plain `npm run dev` defaults to design mode. Plain `npm run build` defaults to normal mode, so production cannot accidentally inherit the development default. You can also select either mode directly:
 

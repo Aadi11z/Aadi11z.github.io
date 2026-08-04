@@ -61,7 +61,7 @@ if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js
 if (!site.includes("introStorageKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("introSeen ? 'returning' : 'first'")) {
   throw new Error('Versioned first-visit state is missing from the pre-paint initialization.');
 }
-for (const behavior of ['PUBLIC_INTRO_MODE', 'introMode', 'isDesignMode', 'previewEnterPress', "showCompleteTitle(!isDesignMode)"]) {
+for (const behavior of ['PUBLIC_INTRO_MODE', 'PUBLIC_INTRO_FORCE', 'introMode', 'forceIntroPreview', 'isDesignMode', 'previewEnterPress', "showCompleteTitle(!isDesignMode)"]) {
   if (!`${site}\n${baseLayout}\n${heroVisual}`.includes(behavior)) throw new Error(`Explicit intro modes are missing: ${behavior}`);
 }
 for (const behavior of ["dataset.introVisit === 'returning'", "localStorage.setItem(introStorageKey, 'seen')"]) {
