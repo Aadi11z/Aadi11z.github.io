@@ -34,7 +34,7 @@ npm run dev:design
 
 `npm run build` always defaults to normal production mode. Restart the development server when switching modes.
 
-Normal mode records the completed intro under `aaditya-portfolio-intro-v1` in browser `localStorage`; design mode ignores and does not update that value.
+Normal mode records the completed intro under `aaditya-portfolio-intro-v1` in browser `sessionStorage`. It stays skipped after refreshes in the same tab, but runs again in a new tab. Design mode ignores and does not update that value.
 
 ## Validation
 

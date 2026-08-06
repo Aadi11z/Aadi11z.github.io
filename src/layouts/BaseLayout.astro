@@ -2,7 +2,7 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import { profile } from '@/data/profile';
-import { introMode, introStorageKey, siteConfig, withBase } from '@/data/site';
+import { introMode, introSessionKey, siteConfig, withBase } from '@/data/site';
 import '@/styles/tokens.css';
 import '@/styles/global.css';
 import '@/styles/layout.css';
@@ -44,7 +44,7 @@ const personSchema = {
 ---
 
 <!doctype html>
-<html lang="en" data-intro-storage-key={introStorageKey} data-intro-mode={introMode}>
+<html lang="en" data-intro-session-key={introSessionKey} data-intro-mode={introMode}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -79,8 +79,8 @@ const personSchema = {
         try {
           savedTheme = localStorage.getItem('theme');
           savedMotion = localStorage.getItem('motion');
-          const introKey = root.dataset.introStorageKey;
-          introSeen = introKey ? localStorage.getItem(introKey) === 'seen' : false;
+          const introKey = root.dataset.introSessionKey;
+          introSeen = introKey ? sessionStorage.getItem(introKey) === 'seen' : false;
         } catch { /* Storage may be disabled. */ }
 
         const theme = savedTheme === 'dark' || savedTheme === 'light'

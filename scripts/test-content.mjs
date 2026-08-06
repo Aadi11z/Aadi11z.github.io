@@ -59,8 +59,8 @@ for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typing-e
 if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js[data-intro-visit='first'] .hero:not([data-intro-state]) .hero-overview")) {
   throw new Error('Hero refresh flash prevention is missing.');
 }
-if (!site.includes("introStorageKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("introSeen ? 'returning' : 'first'")) {
-  throw new Error('Versioned first-visit state is missing from the pre-paint initialization.');
+if (!site.includes("introSessionKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("sessionStorage.getItem(introKey) === 'seen'") || !baseLayout.includes("introSeen ? 'returning' : 'first'")) {
+  throw new Error('Per-tab first-visit state is missing from the pre-paint initialization.');
 }
 for (const behavior of ['PUBLIC_INTRO_MODE', 'introMode', 'isDesignMode', 'previewEnterPress', "showCompleteTitle(!isDesignMode)"]) {
   if (!`${site}\n${baseLayout}\n${heroVisual}`.includes(behavior)) throw new Error(`Explicit intro modes are missing: ${behavior}`);
@@ -74,7 +74,7 @@ for (const removedMode of ['dev:normal', 'dev:recruiter-preview', 'build:normal'
 for (const removedControl of ['data-typing-replay', 'data-typing-readout', 'typing-stage-meta', 'typing-subtitle']) {
   if (heroVisual.includes(removedControl)) throw new Error(`Removed intro control returned: ${removedControl}`);
 }
-for (const behavior of ["dataset.introVisit === 'returning'", "localStorage.setItem(introStorageKey, 'seen')"]) {
+for (const behavior of ["dataset.introVisit === 'returning'", "sessionStorage.setItem(introSessionKey, 'seen')"]) {
   if (!heroVisual.includes(behavior)) throw new Error(`Hero first-visit behavior is missing: ${behavior}`);
 }
 for (const timing of ['typingStartDelay', 'characterDelay', 'completedTitleHold', 'enterPressHold']) {

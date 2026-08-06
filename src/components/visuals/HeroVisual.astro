@@ -97,7 +97,7 @@ const rows: Key[][] = [
     const completedTitleHold = 1200;
     const enterPressHold = 250;
     const root = document.documentElement;
-    const introStorageKey = root.dataset.introStorageKey;
+    const introSessionKey = root.dataset.introSessionKey;
     const isDesignMode = root.dataset.introMode === 'design';
     const isReturningVisitor = root.dataset.introVisit === 'returning';
     let timers: number[] = [];
@@ -115,7 +115,7 @@ const rows: Key[][] = [
       clearTimers();
       if (enter) enter.disabled = true;
       try {
-        if (introStorageKey) localStorage.setItem(introStorageKey, 'seen');
+        if (introSessionKey) sessionStorage.setItem(introSessionKey, 'seen');
       } catch { /* Storage may be disabled. */ }
       gate.dataset.introState = 'exiting';
       const finish = () => {

@@ -8,4 +8,5 @@ graphify-out/
 .env
 .env.*
 !.env.example
+.vscode/
 Aaditya_Bhatnagar_CV.pdf
