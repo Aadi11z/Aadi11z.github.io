@@ -1,0 +1,66 @@
+---
+import ExplorerShell from './ExplorerShell.astro';
+import { unlearningMethods, unlearningObservations, unlearningSplits } from '@/data/playgrounds/unlearning';
+import '@/styles/playgrounds.css';
+
+const defaultObservation = unlearningObservations[0];
+const explorerData = JSON.stringify({ methods: unlearningMethods, observations: unlearningObservations });
+---
+
+<ExplorerShell
+  eyebrow="Interactive evidence explorer"
+  title="Selective-forgetting explorer"
+  description="Inspect the measured selective-rose checkpoint and the evaluation surface. Unsupported combinations remain visibly unavailable rather than being estimated."
+>
+  <div class="unlearning-explorer" data-unlearning-explorer data-perspective="accuracy">
+    <script is:inline type="application/json" data-explorer-data set:html={explorerData} />
+    <form class="explorer-controls" aria-label="Unlearning experiment controls">
+      <label>Unlearning method<select name="method" data-explorer-method>{unlearningMethods.map((method) => <option value={method.id}>{method.label}</option>)}</select></label>
+      <label>Strength<select name="strength" data-explorer-strength><option value="reported-checkpoint">Reported checkpoint</option></select></label>
+      <label>Dataset split<select name="split" data-explorer-split>{unlearningSplits.map((split) => <option value={split.id}>{split.label}</option>)}</select></label>
+      <label>Evaluation view<select name="perspective" data-explorer-perspective><option value="accuracy">Accuracy</option><option value="privacy">Privacy</option><option value="tradeoff">Trade-off</option></select></label>
+    </form>
+
+    <p class="explorer-provenance"><strong>Evidence status:</strong> measured preliminary result. No interpolation or live model inference is used.</p>
+
+    <div class="explorer-output-grid">
+      <div class="explorer-metrics" aria-label="Selected experiment metrics">
+        <article><span>Retain accuracy</span><strong data-metric="retain">{defaultObservation.retainAccuracy}%</strong><small>Retained utility proxy</small></article>
+        <article><span>Forget accuracy</span><strong data-metric="forget">{defaultObservation.forgetTestAccuracy}%</strong><small>Rose test · lower indicates stronger forgetting</small></article>
+        <article><span>Sibling utility</span><strong data-metric="sibling">{defaultObservation.siblingAccuracy}%</strong><small>Sibling-flower accuracy</small></article>
+        <article><span>Privacy leakage</span><strong data-metric="privacy">Not reported</strong><small>Membership-inference value not supplied</small></article>
+      </div>
+
+      <figure class="tradeoff-chart" aria-labelledby="tradeoff-title tradeoff-desc">
+        <figcaption><strong id="tradeoff-title">Utility–forgetting observation</strong><span class="meta">Measured points only</span></figcaption>
+        <svg viewBox="0 0 420 270" role="img">
+          <title>Utility and forgetting trade-off chart</title>
+          <desc id="tradeoff-desc">One measured H-TGSD selective-rose checkpoint plotted using rose-test accuracy and retain accuracy. No connecting curve is drawn.</desc>
+          <path class="chart-grid" d="M45 30v190h340M45 77h340M45 125h340M45 172h340M130 30v190M215 30v190M300 30v190" />
+          <text x="45" y="247">0</text><text x="207" y="247">50</text><text x="367" y="247">100</text>
+          <text x="10" y="220">0</text><text x="4" y="128">50</text><text x="0" y="38">100</text>
+          <text class="chart-axis-label" x="217" y="266" text-anchor="middle">Target test accuracy →</text>
+          <text class="chart-axis-label" x="-125" y="12" transform="rotate(-90)" text-anchor="middle">Retain accuracy →</text>
+          <g data-chart-point transform="translate(82.4 56)"><circle r="8"/><path d="M8 0h54"/><text x="68" y="4">H-TGSD</text></g>
+        </svg>
+      </figure>
+    </div>
+
+    <div class="explorer-lower-grid">
+      <div class="method-comparison">
+        <h3>Method comparison coverage</h3>
+        <ul>{unlearningMethods.map((method) => <li data-method-row={method.id}><strong>{method.label}</strong><span>{method.note}</span></li>)}</ul>
+      </div>
+      <div class="explorer-summary" aria-live="polite" aria-atomic="true">
+        <span class="annotation">Text summary</span>
+        <p data-explorer-summary>The measured H-TGSD selective-rose checkpoint retains 86.32% accuracy, reports 11.0% rose-test accuracy, and preserves 91.75% sibling-flower accuracy. A numeric membership-inference result was not supplied.</p>
+        <p class="explorer-source" data-explorer-source>{defaultObservation.source}</p>
+      </div>
+    </div>
+
+    <noscript><p class="explorer-noscript">Interactive controls require JavaScript. The measured default result, chart, method coverage, and written summary remain available above.</p></noscript>
+  </div>
+  <script>
+    import '@/scripts/playgrounds/unlearning';
+  </script>
+</ExplorerShell>

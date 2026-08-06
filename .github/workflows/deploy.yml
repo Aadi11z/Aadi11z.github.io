@@ -35,7 +35,7 @@ jobs:
           PUBLIC_SITE_URL: https://aadi11z.github.io
           PUBLIC_BASE_PATH: ''
       - name: Verify generated output
-        run: npm run generated-check
+        run: npm run generated-check && npm run budget-check
         env:
           PUBLIC_SITE_URL: https://aadi11z.github.io
           PUBLIC_BASE_PATH: ''

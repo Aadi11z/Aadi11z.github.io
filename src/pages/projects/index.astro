@@ -2,20 +2,31 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
-import { projects } from '@/data/projects';
+import { projectCategories, projects } from '@/data/projects';
+import '@/styles/projects.css';
 ---
 
-<BaseLayout title="Projects — Aaditya Bhatnagar" description="Technical projects and research by Aaditya Bhatnagar across AI systems, machine learning, quantitative research, and data platforms.">
+<BaseLayout title="Projects — Aaditya Bhatnagar" description="Technical projects and research by Aaditya Bhatnagar across AI engineering, machine learning, forecasting, quantitative research, computer vision, and software systems.">
   <section class="page-hero shell">
-    <span class="eyebrow">Archive</span>
-    <h1>Projects & research.</h1>
-    <p>A working archive of technical projects, research systems, and evaluation work. Each entry stays close to the available evidence and links only to supplied public resources.</p>
-    <p class="filter-note">Categories: AI systems · Machine learning · Research · Quantitative · Data platforms · Software engineering</p>
-  </section>
-  <section class="shell" aria-labelledby="archive-title">
-    <SectionHeading id="archive-title" index="All work" title="A closer look" description="Selected systems and research projects, presented with their context, methods, and reported results." />
-    <div class="archive-grid">
-      {projects.map((project, index) => <ProjectCard project={project} index={index} />)}
+    <div class="page-hero-index"><span class="eyebrow">Project archive</span><span class="meta">{String(projects.length).padStart(2, '0')} records / Selected work</span></div>
+    <h1>Systems, experiments<br />and <em>research.</em></h1>
+    <div class="page-hero-copy">
+      <p>A working archive of technical projects, research systems, and evaluation work. Every metric stays attached to its context, and only supplied public resources are linked.</p>
+      <p class="meta">FILTER / INSPECT / OPEN CASE FILE</p>
     </div>
   </section>
+  <section class="shell archive-section" aria-labelledby="archive-title">
+    <SectionHeading id="archive-title" index="Index / All work" title="Project index" description="Filter by working area or scan the complete archive. All entries remain available when JavaScript is disabled." />
+    <div class="project-filters" data-project-filters aria-label="Filter projects by category">
+      <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All work</button>
+      {projectCategories.map((category) => <button class="filter-button" type="button" data-filter={category} aria-pressed="false">{category}</button>)}
+    </div>
+    <p class="filter-status meta" data-filter-status aria-live="polite">{projects.length} projects shown</p>
+    <div class="archive-grid">
+      {projects.map((project, index) => <ProjectCard project={project} index={index} variant="archive" />)}
+    </div>
+  </section>
+  <script>
+    import '@/scripts/project-filters';
+  </script>
 </BaseLayout>

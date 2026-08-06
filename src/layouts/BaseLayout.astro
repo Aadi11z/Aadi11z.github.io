@@ -2,14 +2,18 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import { profile } from '@/data/profile';
-import { siteConfig, withBase } from '@/data/site';
+import { introMode, introSessionKey, siteConfig, withBase } from '@/data/site';
+import '@/styles/tokens.css';
 import '@/styles/global.css';
+import '@/styles/layout.css';
+import '@/styles/effects.css';
 
 interface Props {
   title?: string;
   description?: string;
   type?: 'website' | 'article';
   noindex?: boolean;
+  layout?: 'document' | 'deck';
 }
 
 const {
@@ -17,13 +21,14 @@ const {
   description = 'Portfolio of Aaditya Bhatnagar, a Dubai-based computer science student building machine-learning systems, grounded AI products, quantitative research platforms, and machine-unlearning research.',
   type = 'website',
   noindex = false,
+  layout = 'document',
 } = Astro.props;
 const currentPath = Astro.url.pathname;
 const canonicalPath = siteConfig.basePath && (currentPath === siteConfig.basePath || currentPath.startsWith(`${siteConfig.basePath}/`))
   ? currentPath
   : withBase(currentPath);
 const canonical = new URL(canonicalPath, siteConfig.url).toString();
-const imageUrl = new URL(withBase('/og-image.svg'), siteConfig.url).toString();
+const imageUrl = new URL(withBase('/og-image.png'), siteConfig.url).toString();
 const siteRoot = new URL(withBase('/'), siteConfig.url).toString();
 const personSchema = {
   '@context': 'https://schema.org',
@@ -33,15 +38,17 @@ const personSchema = {
   email: `mailto:${profile.email}`,
   jobTitle: 'ML Engineer and Data Scientist',
   address: { '@type': 'PostalAddress', addressLocality: 'Dubai', addressCountry: 'AE' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'BITS Pilani, Dubai Campus' },
   sameAs: Object.values(profile.links),
 };
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-intro-session-key={introSessionKey} data-intro-mode={introMode}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    <meta name="theme-color" content="#f4f0e7" data-theme-color />
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
@@ -51,7 +58,10 @@ const personSchema = {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={imageUrl} />
-    <meta property="og:image:alt" content="Aaditya Bhatnagar — AB monogram" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Aaditya Bhatnagar Editorial Manga Lab portfolio card" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
@@ -61,22 +71,42 @@ const personSchema = {
     <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
     <script is:inline>
       (() => {
+        const root = document.documentElement;
+        root.classList.add('js');
+        let savedTheme = null;
+        let savedMotion = null;
+        let introSeen = false;
         try {
-          const saved = localStorage.getItem('theme');
-          const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-          document.documentElement.dataset.theme = theme;
-        } catch {
-          document.documentElement.dataset.theme = 'light';
-        }
+          savedTheme = localStorage.getItem('theme');
+          savedMotion = localStorage.getItem('motion');
+          const introKey = root.dataset.introSessionKey;
+          introSeen = introKey ? sessionStorage.getItem(introKey) === 'seen' : false;
+        } catch { /* Storage may be disabled. */ }
+
+        const theme = savedTheme === 'dark' || savedTheme === 'light'
+          ? savedTheme
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const motion = savedMotion === 'full' || savedMotion === 'reduced'
+          ? savedMotion
+          : (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full');
+        root.dataset.theme = theme;
+        root.dataset.motion = motion;
+        root.dataset.introVisit = root.dataset.introMode === 'design'
+          ? 'first'
+          : (introSeen ? 'returning' : 'first');
+        document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#0d121b' : '#f4f0e7');
       })();
     </script>
   </head>
-  <body>
+  <body data-layout={layout}>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <Header />
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <slot />
     </main>
     <Footer />
+    <script>
+      import '@/scripts/effects';
+    </script>
   </body>
 </html>

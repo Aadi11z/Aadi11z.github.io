@@ -1,15 +1,20 @@
 ---
 import { profile } from '@/data/profile';
+import { withBase } from '@/data/site';
 ---
 
 <footer class="site-footer">
   <div class="shell footer-inner">
-    <span>{profile.name} · {profile.location} · {new Date().getFullYear()}</span>
+    <div class="footer-signoff">
+      <span class="footer-mark">AB</span>
+      <span>{profile.name}<small>{profile.location} · {new Date().getFullYear()}</small></span>
+    </div>
     <nav class="footer-links" aria-label="Footer navigation">
       <a href={profile.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href={profile.links.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href={`mailto:${profile.email}`}>Email</a>
-      <span>Built with Astro + TypeScript</span>
+      <a href={withBase('/lab/')}>Lab</a>
     </nav>
+    <span class="footer-stack">Built with Astro + TypeScript</span>
   </div>
 </footer>

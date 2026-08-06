@@ -1,27 +1,28 @@
 ---
 import type { Project } from '@/data/projects';
-interface Props { type: Project['visualType']; label?: string; }
-const { type, label } = Astro.props;
+import GroundDeskVisual from './visuals/GroundDeskVisual.astro';
+import MLPVisual from './visuals/MLPVisual.astro';
+import MarketVisual from './visuals/MarketVisual.astro';
+import LensVisual from './visuals/LensVisual.astro';
+import UnlearningVisual from './visuals/UnlearningVisual.astro';
+import AdversarialVisual from './visuals/AdversarialVisual.astro';
+
+interface Props { type: Project['visualType']; label?: string; title?: string; }
+const { type, label, title = 'Technical project diagram' } = Astro.props;
 ---
 
-<div class:list={['project-visual', `visual-${type}`]} aria-hidden="true">
-  {type === 'grounddesk' && (
-    <svg viewBox="0 0 420 260" fill="none"><circle cx="105" cy="122" r="38" stroke="currentColor" opacity=".35"/><circle cx="297" cy="74" r="22" stroke="currentColor" opacity=".65"/><circle cx="310" cy="184" r="31" stroke="currentColor" opacity=".45"/><path d="m138 108 136-27M138 138l141 37M297 96l12 57" stroke="currentColor" opacity=".55"/><path d="M85 122h40M286 74h22M292 184h36" stroke="var(--accent)" stroke-width="3"/><rect x="62" y="46" width="86" height="122" rx="6" stroke="currentColor" opacity=".22"/><path d="M78 72h54M78 91h40M78 110h52" stroke="currentColor" opacity=".45"/></svg>
-  )}
-  {type === 'mlp' && (
-    <svg viewBox="0 0 420 260" fill="none"><g stroke="currentColor" opacity=".35"><path d="M84 84 203 64M84 84l119 55M84 170l119-106M84 170l119-31M203 64l119 57M203 64l119 101M203 139l119-18M203 139l119 26"/><path d="M203 64v75"/></g><g fill="var(--accent)"><circle cx="84" cy="84" r="9"/><circle cx="84" cy="170" r="9"/><circle cx="203" cy="64" r="9"/><circle cx="203" cy="139" r="9"/><circle cx="322" cy="121" r="11"/></g><path d="M332 215H70" stroke="currentColor" opacity=".25"/><path d="M78 205c30-12 53-7 79-18 27-11 39 7 62-12 26-21 37 6 64-15 18-14 29-5 42-14" stroke="var(--accent)" stroke-width="2"/></svg>
-  )}
-  {type === 'nrg' && (
-    <svg viewBox="0 0 420 260" fill="none"><path d="M35 211H390M35 35v176" stroke="currentColor" opacity=".25"/><path d="M35 171c25-54 44 12 68-29 23-39 35-32 57-61 24-31 37 20 57-4 22-26 37 15 61-12 25-27 48-18 73-47" stroke="var(--accent)" stroke-width="3"/><path d="M35 139c29 9 48-17 72 8 26 26 37 3 60 17 27 16 50-19 75 1 27 22 51-10 74 2 24 12 45-17 74-7" stroke="currentColor" opacity=".35"/><circle cx="274" cy="65" r="6" fill="var(--accent)"/></svg>
-  )}
-  {type === 'qnt' && (
-    <svg viewBox="0 0 420 260" fill="none"><path d="M35 212H390M35 35v177" stroke="currentColor" opacity=".25"/><path d="M36 167c28-46 52-21 74-52 20-28 36-6 58-38 27-39 44 28 71-2 29-32 43 20 72-8 29-28 48-12 78-47" stroke="var(--accent)" stroke-width="3"/><path d="M36 180c26-26 45-5 74-31 22-20 40-8 58-20 24-16 48 12 71-7 28-23 43-1 72-12 26-10 52 9 78-9" stroke="currentColor" opacity=".3"/><rect x="61" y="72" width="92" height="54" fill="var(--accent)" opacity=".08"/><rect x="244" y="92" width="104" height="58" fill="var(--accent)" opacity=".08"/></svg>
-  )}
-  {type === 'deeplense' && (
-    <svg viewBox="0 0 420 260" fill="none"><circle cx="210" cy="130" r="75" stroke="var(--accent)" stroke-width="2" opacity=".8"/><circle cx="210" cy="130" r="35" stroke="currentColor" opacity=".45"/><circle cx="210" cy="130" r="9" fill="var(--accent)"/><ellipse cx="210" cy="130" rx="128" ry="41" transform="rotate(-24 210 130)" stroke="currentColor" opacity=".28"/><ellipse cx="210" cy="130" rx="128" ry="41" transform="rotate(28 210 130)" stroke="currentColor" opacity=".28"/><circle cx="111" cy="92" r="4" fill="currentColor"/><circle cx="312" cy="174" r="4" fill="currentColor"/></svg>
-  )}
-  {type === 'unlearning' && (
-    <svg viewBox="0 0 420 260" fill="none"><path d="M62 130h296" stroke="currentColor" opacity=".2"/><path d="M92 84 165 130 92 176M328 84 255 130l73 46" stroke="var(--accent)" stroke-width="2"/><circle cx="92" cy="84" r="8" fill="var(--accent)"/><circle cx="92" cy="176" r="8" fill="var(--accent)"/><circle cx="328" cy="84" r="8" fill="var(--accent)"/><circle cx="328" cy="176" r="8" fill="var(--accent)"/><circle cx="210" cy="130" r="29" stroke="currentColor" opacity=".5"/><path d="M198 130h24M210 118v24" stroke="currentColor" opacity=".55"/></svg>
-  )}
-  {label && <span class="project-visual-label meta">{label}</span>}
-</div>
+<figure class:list={['project-visual', `visual-${type}`, 'manga-panel']} aria-label={title}>
+  <div class="visual-code meta"><span>AB / {type.toUpperCase()}</span><span>TECH NOTE</span></div>
+  <div class="project-visual-canvas" aria-hidden="true">
+    {type === 'grounddesk' && <GroundDeskVisual />}
+    {type === 'mlp' && <MLPVisual />}
+    {(type === 'nrg' || type === 'qnt') && <MarketVisual mode={type} />}
+    {type === 'deeplense' && <LensVisual />}
+    {type === 'unlearning' && <UnlearningVisual />}
+    {type === 'adversarial' && <AdversarialVisual />}
+  </div>
+  <figcaption class="visual-footer">
+    {label && <span class="project-visual-label meta">{label}</span>}
+    <span class="visual-status meta"><span aria-hidden="true">●</span> Case file</span>
+  </figcaption>
+</figure>

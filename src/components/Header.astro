@@ -2,30 +2,37 @@
 import { profile } from '@/data/profile';
 import { withBase } from '@/data/site';
 import ThemeToggle from './ThemeToggle.astro';
+import MotionPreference from './MotionPreference.astro';
 
 const path = Astro.url.pathname;
 const homePath = withBase('/');
-const link = (section: string) => path === homePath || path === `${homePath}/` ? `#${section}` : `${homePath}#${section}`;
+const onHome = path === homePath || path === homePath.replace(/\/$/, '');
+const link = (section: string) => onHome ? `#${section}` : `${homePath}#${section}`;
 const resumePath = withBase('/resume/');
 const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
 ---
 
 <header class="site-header">
   <div class="shell header-inner">
-    <a class="wordmark" href={homePath} aria-label={`${profile.name} home`}>
+    <a class="wordmark" href={onHome ? '#overview' : homePath} aria-label={`${profile.name} home`}>
       <span class="wordmark-mark">{profile.monogram}</span>
-      <span class="wordmark-name">{profile.name}</span>
+      <span class="wordmark-name">{profile.name}<small>ML / DATA / SYSTEMS</small></span>
     </a>
     <nav class="desktop-nav" aria-label="Primary navigation">
-      <a class="nav-link" data-section-link="work" href={link('work')}>Work</a>
-      <a class="nav-link" data-section-link="research" href={link('research')}>Research</a>
-      <a class="nav-link" data-section-link="experience" href={link('experience')}>Experience</a>
-      <a class="nav-link" data-section-link="about" href={link('about')}>About</a>
-      <a class="nav-link" data-section-link="contact" href={link('contact')}>Contact</a>
-      <a class="nav-link nav-resume" aria-current={onResume ? 'page' : undefined} href={resumePath}>Resume</a>
-      <ThemeToggle />
+      <a class="nav-link" data-section-link="overview" aria-controls={onHome ? 'overview' : undefined} href={link('overview')}>Overview</a>
+      <a class="nav-link" data-section-link="work" aria-controls={onHome ? 'work' : undefined} href={link('work')}>Work</a>
+      <a class="nav-link" data-section-link="research" aria-controls={onHome ? 'research' : undefined} href={link('research')}>Research</a>
+      <a class="nav-link" data-section-link="experience" aria-controls={onHome ? 'experience' : undefined} href={link('experience')}>Experience</a>
+      <a class="nav-link" data-section-link="about" aria-controls={onHome ? 'about' : undefined} href={link('about')}>About</a>
+      <a class="nav-link" data-section-link="contact" aria-controls={onHome ? 'contact' : undefined} href={link('contact')}>Contact</a>
+      <a class="nav-link nav-resume" aria-current={onResume ? 'page' : undefined} href={resumePath}>Résumé <span aria-hidden="true">↗</span></a>
+      <div class="header-preferences" aria-label="Display preferences">
+        <MotionPreference compact />
+        <ThemeToggle />
+      </div>
     </nav>
     <div class="mobile-actions">
+      <MotionPreference compact />
       <ThemeToggle />
       <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="mobile-navigation" data-menu-toggle>
         <svg class="icon menu-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -33,63 +40,65 @@ const onResume = path === resumePath || path === resumePath.replace(/\/$/, '');
       </button>
     </div>
   </div>
-  <nav class="mobile-nav shell" id="mobile-navigation" aria-label="Mobile navigation" data-mobile-nav data-open="false">
-    <a href={link('work')}>Work</a>
-    <a href={link('research')}>Research</a>
-    <a href={link('experience')}>Experience</a>
-    <a href={link('about')}>About</a>
-    <a href={link('contact')}>Contact</a>
-    <a class="mobile-resume" href={resumePath}>Resume</a>
+  <nav class="mobile-nav" id="mobile-navigation" aria-label="Mobile navigation" aria-hidden="true" data-mobile-nav data-open="false">
+    <div class="shell mobile-nav-inner">
+      <span class="meta mobile-nav-label">Index / Navigate</span>
+      <a data-section-link="overview" aria-controls={onHome ? 'overview' : undefined} href={link('overview')}><span>00</span>Overview</a>
+      <a data-section-link="work" aria-controls={onHome ? 'work' : undefined} href={link('work')}><span>01</span>Work</a>
+      <a data-section-link="research" aria-controls={onHome ? 'research' : undefined} href={link('research')}><span>02</span>Research</a>
+      <a data-section-link="experience" aria-controls={onHome ? 'experience' : undefined} href={link('experience')}><span>03</span>Experience</a>
+      <a data-section-link="about" aria-controls={onHome ? 'about' : undefined} href={link('about')}><span>04</span>About</a>
+      <a data-section-link="contact" aria-controls={onHome ? 'contact' : undefined} href={link('contact')}><span>05</span>Contact</a>
+      <a href={withBase('/projects/')}><span>INDEX</span>Project archive</a>
+      <a href={withBase('/lab/')}><span>LAB</span>Experiments</a>
+      <a class="mobile-resume" href={resumePath}><span>PDF</span>Résumé</a>
+      <div class="mobile-motion"><MotionPreference /></div>
+    </div>
   </nav>
 </header>
 
 <script>
-  const menuButton = document.querySelector('[data-menu-toggle]');
-  const mobileNav = document.querySelector('[data-mobile-nav]');
-  const firstMobileLink = mobileNav?.querySelector('a');
+  const menuButton = document.querySelector<HTMLElement>('[data-menu-toggle]');
+  const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
+  const firstMobileLink = mobileNav?.querySelector<HTMLElement>('a');
   let lastFocusedElement: HTMLElement | null = null;
+
   const setMenu = (open: boolean) => {
     mobileNav?.setAttribute('data-open', String(open));
+    mobileNav?.setAttribute('aria-hidden', String(!open));
     menuButton?.setAttribute('aria-expanded', String(open));
     menuButton?.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
     if (open) {
       lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       firstMobileLink?.focus();
-    } else {
-      lastFocusedElement?.focus();
+    } else if (lastFocusedElement) {
+      lastFocusedElement.focus();
       lastFocusedElement = null;
     }
   };
+
   menuButton?.addEventListener('click', () => setMenu(mobileNav?.getAttribute('data-open') !== 'true'));
   mobileNav?.querySelectorAll('a').forEach((item) => item.addEventListener('click', () => setMenu(false)));
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 900 && mobileNav?.getAttribute('data-open') === 'true') setMenu(false);
+  });
   document.addEventListener('keydown', (event: KeyboardEvent) => {
     if (event.key === 'Escape' && mobileNav?.getAttribute('data-open') === 'true') {
       event.preventDefault();
       setMenu(false);
     }
+    if (event.key === 'Tab' && mobileNav?.getAttribute('data-open') === 'true') {
+      const focusable = [menuButton, ...Array.from(mobileNav.querySelectorAll<HTMLElement>('a, button'))]
+        .filter((item): item is HTMLElement => item instanceof HTMLElement && !item.hasAttribute('disabled'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    }
   });
-
-  const sectionLinks = document.querySelectorAll<HTMLElement>('[data-section-link]');
-  const sections = [...sectionLinks]
-    .map((item) => document.getElementById(item.dataset.sectionLink ?? ''))
-    .filter((section): section is HTMLElement => Boolean(section));
-  if (sections.length && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          sectionLinks.forEach((item) => item.removeAttribute('aria-current'));
-          document.querySelector(`[data-section-link="${entry.target.id}"]`)?.setAttribute('aria-current', 'location');
-        }
-      });
-    }, { rootMargin: '-28% 0px -62% 0px', threshold: 0 });
-    sections.forEach((section) => observer.observe(section));
-  }
 </script>
-
-<style>
-  .mobile-actions { display: none; align-items: center; }
-  .menu-close { display: none; }
-  [data-menu-toggle][aria-expanded='true'] .menu-open { display: none; }
-  [data-menu-toggle][aria-expanded='true'] .menu-close { display: block; }
-  @media (max-width: 820px) { .mobile-actions { display: flex; } }
-</style>

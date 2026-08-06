@@ -1,0 +1,250 @@
+---
+import { profile } from '@/data/profile';
+
+type Key = { label: string; value: string; size?: 'wide' | 'wider' | 'space'; enter?: boolean };
+
+const rows: Key[][] = [
+  [
+    { label: 'esc', value: 'escape', size: 'wide' },
+    ...'1234567890'.split('').map((value) => ({ label: value, value })),
+    { label: 'delete', value: 'backspace', size: 'wider' },
+  ],
+  [
+    { label: 'tab', value: 'tab', size: 'wide' },
+    ...'QWERTYUIOP'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
+    { label: '\\', value: '\\', size: 'wide' },
+  ],
+  [
+    { label: 'caps', value: 'capslock', size: 'wider' },
+    ...'ASDFGHJKL'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
+    { label: 'Enter ↵', value: 'enter', size: 'wider', enter: true },
+  ],
+  [
+    { label: 'shift', value: 'shift', size: 'wider' },
+    ...'ZXCVBNM'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
+    { label: 'shift', value: 'shift-right', size: 'wider' },
+  ],
+  [
+    { label: 'command', value: 'meta', size: 'wide' },
+    { label: 'option', value: 'option', size: 'wide' },
+    { label: '', value: 'space', size: 'space' },
+    { label: 'option', value: 'option-right', size: 'wide' },
+    { label: 'command', value: 'meta-right', size: 'wide' },
+  ],
+];
+---
+
+<div class="typing-station" data-typing-station data-name={profile.name} aria-describedby="typing-station-description">
+  <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}. Press Enter to open the portfolio overview.</p>
+
+  <div class="typing-nameplate">
+    <div class="typing-title" aria-hidden="true">
+      <span data-typed-name>{profile.name}</span>
+      <span class="typing-cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <div class="keyboard-scene">
+    <div class="keyboard-floor-glow" aria-hidden="true"></div>
+    <div class="keyboard-float">
+      <div class="keyboard-chassis">
+        <div class="keyboard-chassis-edge" aria-hidden="true"></div>
+        <div class="keyboard" role="group" aria-label="Animated mechanical keyboard">
+          {rows.map((row) => (
+            <div class="keyboard-row" role="presentation">
+              {row.map((key) => key.enter ? (
+                <button
+                  class:list={['keyboard-key', 'keyboard-enter', key.size && `keyboard-key-${key.size}`]}
+                  type="button"
+                  data-key={key.value}
+                  data-typing-enter
+                  aria-label="Open the portfolio overview"
+                >
+                  <span>{key.label}</span>
+                </button>
+              ) : (
+                <span class:list={['keyboard-key', key.size && `keyboard-key-${key.size}`]} data-key={key.value} aria-hidden="true">
+                  {key.label}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="typing-instruction">
+    <span class="annotation-mark" aria-hidden="true">↳</span>
+    <span>Press Enter to open Overview</span>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-typing-status></p>
+</div>
+
+<script>
+  const stations = Array.from(document.querySelectorAll<HTMLElement>('[data-typing-station]'));
+
+  stations.forEach((station) => {
+    const output = station.querySelector<HTMLElement>('[data-typed-name]');
+    const enter = station.querySelector<HTMLButtonElement>('[data-typing-enter]');
+    const status = station.querySelector<HTMLElement>('[data-typing-status]');
+    const gate = station.closest<HTMLElement>('[data-hero-gate]');
+    const overview = gate?.querySelector<HTMLElement>('[data-overview-content]');
+    const name = station.dataset.name ?? '';
+    const sequence = Array.from(name);
+    const typingStartDelay = 250;
+    const characterDelay = 125;
+    const completedTitleHold = 1200;
+    const enterPressHold = 250;
+    const root = document.documentElement;
+    const introSessionKey = root.dataset.introSessionKey;
+    const isDesignMode = root.dataset.introMode === 'design';
+    const isReturningVisitor = root.dataset.introVisit === 'returning';
+    let timers: number[] = [];
+    let hasPlayed = false;
+
+    const clearTimers = () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      timers = [];
+      station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
+      station.removeAttribute('data-enter-state');
+    };
+
+    const openOverview = (focusHeading = false) => {
+      if (!gate || !overview || gate.dataset.introState === 'entered') return;
+      clearTimers();
+      if (enter) enter.disabled = true;
+      try {
+        if (introSessionKey) sessionStorage.setItem(introSessionKey, 'seen');
+      } catch { /* Storage may be disabled. */ }
+      gate.dataset.introState = 'exiting';
+      const finish = () => {
+        gate.dataset.introState = 'entered';
+        if (!focusHeading) return;
+        const heading = overview.querySelector<HTMLElement>('h2');
+        heading?.setAttribute('tabindex', '-1');
+        heading?.focus({ preventScroll: true });
+      };
+      if (document.documentElement.dataset.motion === 'reduced') finish();
+      else timers.push(window.setTimeout(finish, 260));
+    };
+
+    const pressEnterAndOpen = (focusHeading = false) => {
+      if (gate?.dataset.introState === 'entered') return;
+      station.dataset.typingState = 'confirming';
+      station.dataset.enterState = 'pressed';
+      if (status) status.textContent = 'Enter pressed. Opening the portfolio overview.';
+      enter?.classList.add('is-pressed');
+      timers.push(window.setTimeout(() => openOverview(focusHeading), enterPressHold));
+    };
+
+    const showCompleteTitle = (autoAdvance = true) => {
+      clearTimers();
+      if (output) output.textContent = name;
+      station.dataset.typingState = 'complete';
+      if (enter) enter.disabled = false;
+      if (status) status.textContent = isDesignMode
+        ? 'Design mode complete. Automatic Enter and the Overview transition are disabled.'
+        : autoAdvance
+          ? 'Typing complete. Enter will be pressed automatically.'
+          : 'Typing animation skipped. Activate Open Overview to continue.';
+      if (gate?.dataset.introState !== 'entered') gate?.setAttribute('data-intro-state', 'active');
+      if (autoAdvance) timers.push(window.setTimeout(pressEnterAndOpen, completedTitleHold));
+    };
+
+    const previewEnterPress = () => {
+      clearTimers();
+      station.dataset.typingState = 'confirming';
+      station.dataset.enterState = 'pressed';
+      if (status) status.textContent = 'Enter key preview. The Overview transition remains disabled in design mode.';
+      enter?.classList.add('is-pressed');
+      timers.push(window.setTimeout(() => {
+        enter?.classList.remove('is-pressed');
+        station.removeAttribute('data-enter-state');
+        station.dataset.typingState = 'complete';
+        if (status) status.textContent = 'Design mode complete. Automatic Enter and the Overview transition are disabled.';
+      }, enterPressHold));
+    };
+
+    const pressCharacterKey = (character: string) => {
+      const keyValue = character === ' ' ? 'space' : character.toLowerCase();
+      const keys = Array.from(station.querySelectorAll<HTMLElement>(`[data-key="${keyValue}"]`));
+      if (character !== character.toLowerCase()) {
+        const shift = station.querySelector<HTMLElement>('[data-key="shift"]');
+        if (shift) keys.push(shift);
+      }
+      keys.forEach((key) => key.classList.add('is-pressed'));
+      const releaseTimer = window.setTimeout(() => keys.forEach((key) => key.classList.remove('is-pressed')), 115);
+      timers.push(releaseTimer);
+    };
+
+    const play = () => {
+      if (!output || document.documentElement.dataset.motion === 'reduced') {
+        showCompleteTitle(false);
+        return;
+      }
+
+      clearTimers();
+      hasPlayed = true;
+      if (enter) enter.disabled = true;
+      output.textContent = '';
+      if (status) status.textContent = `Typing ${name}.`;
+      sequence.forEach((character, index) => {
+        const timer = window.setTimeout(() => {
+          output.textContent += character;
+          pressCharacterKey(character);
+
+          if (index === sequence.length - 1) {
+            timers.push(window.setTimeout(() => showCompleteTitle(!isDesignMode), 125));
+          }
+        }, typingStartDelay + index * characterDelay);
+        timers.push(timer);
+      });
+    };
+
+    station.dataset.enhanced = 'true';
+    if (enter) enter.disabled = true;
+    if (isDesignMode) station.dataset.designMode = 'true';
+
+    if (!isDesignMode && isReturningVisitor) {
+      gate?.setAttribute('data-intro-state', 'entered');
+      return;
+    }
+
+    enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => pressEnterAndOpen(true));
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' || event.repeat || station.dataset.typingState !== 'complete') return;
+      if (event.target === enter) return;
+      if (event.target instanceof Element && event.target.closest('a, button, input, select, textarea')) return;
+      event.preventDefault();
+      if (isDesignMode) previewEnterPress();
+      else pressEnterAndOpen(true);
+    });
+    window.addEventListener('motionchange', () => {
+      if (gate?.dataset.introState === 'entered') return;
+      if (document.documentElement.dataset.motion === 'reduced') {
+        showCompleteTitle(false);
+      }
+      else play();
+    });
+
+    if (document.documentElement.dataset.motion === 'reduced') {
+      showCompleteTitle(false);
+    } else {
+      if (output) output.textContent = '';
+      station.dataset.typingState = 'waiting';
+      gate?.setAttribute('data-intro-state', 'active');
+    }
+
+    if (document.documentElement.dataset.motion !== 'reduced' && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting) || hasPlayed) return;
+        play();
+        observer.disconnect();
+      }, { threshold: .01 });
+      observer.observe(station);
+    } else if (document.documentElement.dataset.motion !== 'reduced') {
+      play();
+    }
+  });
+</script>

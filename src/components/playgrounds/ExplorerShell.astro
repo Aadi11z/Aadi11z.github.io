@@ -1,0 +1,12 @@
+---
+interface Props { title: string; eyebrow: string; description: string; }
+const { title, eyebrow, description } = Astro.props;
+---
+
+<section class="explorer-shell manga-panel" aria-labelledby="explorer-title" data-reveal>
+  <header class="explorer-header">
+    <div><span class="eyebrow">{eyebrow}</span><h2 id="explorer-title">{title}</h2></div>
+    <p>{description}</p>
+  </header>
+  <slot />
+</section>

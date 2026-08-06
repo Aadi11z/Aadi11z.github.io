@@ -2,7 +2,7 @@ export const profile = {
   name: 'Aaditya Bhatnagar',
   monogram: 'AB',
   location: 'Dubai, UAE',
-  email: '11aadityad@gmail.com',
+  email: '11aadityab@gmail.com',
   graduation: 'September 2026',
   university: 'BITS Pilani, Dubai Campus',
   degree: 'Bachelor of Engineering in Computer Science',

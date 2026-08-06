@@ -5,11 +5,14 @@ import { withBase } from '@/data/site';
 
 <BaseLayout title="Page not found — Aaditya Bhatnagar" description="The page you requested could not be found." noindex>
   <section class="not-found shell">
-    <div>
-      <span class="eyebrow">404</span>
-      <h1>That page is missing.</h1>
-      <p>The link may be outdated or the page may have moved back into the archive.</p>
-      <a class="button button-primary" href={withBase('/')}>Return home <span aria-hidden="true">↗</span></a>
+    <div class="not-found-grid">
+      <span class="not-found-code" aria-hidden="true">404</span>
+      <div>
+        <span class="eyebrow">Signal lost</span>
+        <h1>That page is missing.</h1>
+        <p>The link may be outdated or the page may have moved back into the project archive.</p>
+        <a class="button button-primary" href={withBase('/')}>Return home <span aria-hidden="true">↗</span></a>
+      </div>
     </div>
   </section>
 </BaseLayout>

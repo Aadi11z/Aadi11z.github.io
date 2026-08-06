@@ -1,0 +1,62 @@
+---
+import { profile } from '@/data/profile';
+import { withBase } from '@/data/site';
+import SocialLinks from './SocialLinks.astro';
+import HeroVisual from './visuals/HeroVisual.astro';
+---
+
+<section class="hero shell" aria-labelledby="hero-title" data-hero-gate>
+  <div class="hero-intro" data-hero-intro>
+    <HeroVisual />
+  </div>
+
+  <div class="hero-overview" data-overview-content>
+    <div class="hero-rule" aria-hidden="true">
+      <span>Overview / 00</span>
+      <span>Dubai, UAE / September 2026</span>
+    </div>
+
+    <div class="hero-layout">
+      <div class="hero-main" data-reveal>
+        <span class="eyebrow">ML / Data / Systems</span>
+        <h1 id="hero-title" class="hero-name">{profile.name}</h1>
+        <h2 id="overview-title" class="hero-headline">{profile.headline}</h2>
+      </div>
+      <div class="hero-support" data-reveal>
+        <p class="status-line"><span aria-hidden="true">●</span> {profile.location} · Open to graduate opportunities</p>
+        <p class="hero-copy">{profile.description}</p>
+        <div class="button-row hero-actions">
+          <a class="button button-primary" href="#work">Explore selected work <span aria-hidden="true">→</span></a>
+          <a class="button button-quiet" href={withBase('/resume/')}>Résumé <span aria-hidden="true">↗</span></a>
+          <a class="button button-quiet" href={`mailto:${profile.email}`}>Email <span aria-hidden="true">↗</span></a>
+        </div>
+        <SocialLinks />
+      </div>
+    </div>
+
+    <dl class="hero-evidence" aria-label="Profile summary">
+      <div>
+        <dt>Education</dt>
+        <dd>{profile.university}</dd>
+      </div>
+      <div>
+        <dt>Degree</dt>
+        <dd>BE Computer Science</dd>
+      </div>
+      <div>
+        <dt>CGPA</dt>
+        <dd>{profile.cgpa}</dd>
+      </div>
+      <div>
+        <dt>Focus</dt>
+        <dd>Reliable AI · Quant systems</dd>
+      </div>
+    </dl>
+
+    <div class="hero-footnote">
+      <span class="availability-dot" aria-hidden="true"></span>
+      <p>{profile.availability}</p>
+      <span class="meta">SELECT / 01</span>
+    </div>
+  </div>
+</section>

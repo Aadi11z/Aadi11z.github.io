@@ -4,9 +4,7 @@ const { index, title, description, id } = Astro.props;
 ---
 
 <div class="section-heading">
-  <div>
-    <span class="section-index">{index}</span>
-    <h2 id={id}>{title}</h2>
-  </div>
+  <span class="section-index">{index}</span>
+  <h2 id={id}>{title}</h2>
   <p>{description}</p>
 </div>
