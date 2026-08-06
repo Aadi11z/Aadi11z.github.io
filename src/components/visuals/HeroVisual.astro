@@ -188,10 +188,7 @@ const rows: Key[][] = [
       hasPlayed = true;
       if (enter) enter.disabled = true;
       output.textContent = '';
-      station.dataset.typingState = 'typing';
-      gate?.setAttribute('data-intro-state', 'active');
-      if (status) status.textContent = 'Typing Aaditya Bhatnagar.';
-
+      if (status) status.textContent = `Typing ${name}.`;
       sequence.forEach((character, index) => {
         const timer = window.setTimeout(() => {
           output.textContent += character;
