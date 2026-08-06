@@ -59,6 +59,18 @@ for (const behavior of ['data-typing-station', 'data-typed-name', 'data-typing-e
 if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js[data-intro-visit='first'] .hero:not([data-intro-state]) .hero-overview")) {
   throw new Error('Hero refresh flash prevention is missing.');
 }
+if (!baseLayout.includes("root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered'")) {
+  throw new Error('Pre-paint hero intro state is missing.');
+}
+for (const behavior of ["setIntroState('active')", "setIntroState('exiting')", "setIntroState('entered')"]) {
+  if (!heroVisual.includes(behavior)) throw new Error(`Hero intro state transition is missing: ${behavior}`);
+}
+for (const selector of [
+  "html.js[data-hero-intro-state='active'] body[data-layout='deck'] .site-header",
+  "html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .site-header",
+]) {
+  if (!homeStyles.includes(selector)) throw new Error(`Hero header suppression is missing: ${selector}`);
+}
 if (!site.includes("introSessionKey = 'aaditya-portfolio-intro-v1'") || !baseLayout.includes("sessionStorage.getItem(introKey) === 'seen'") || !baseLayout.includes("introSeen ? 'returning' : 'first'")) {
   throw new Error('Per-tab first-visit state is missing from the pre-paint initialization.');
 }

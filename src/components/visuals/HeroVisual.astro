@@ -103,6 +103,11 @@ const rows: Key[][] = [
     let timers: number[] = [];
     let hasPlayed = false;
 
+    const setIntroState = (state: 'active' | 'exiting' | 'entered') => {
+      gate?.setAttribute('data-intro-state', state);
+      root.dataset.heroIntroState = state;
+    };
+
     const clearTimers = () => {
       timers.forEach((timer) => window.clearTimeout(timer));
       timers = [];
@@ -117,9 +122,9 @@ const rows: Key[][] = [
       try {
         if (introSessionKey) sessionStorage.setItem(introSessionKey, 'seen');
       } catch { /* Storage may be disabled. */ }
-      gate.dataset.introState = 'exiting';
+      setIntroState('exiting');
       const finish = () => {
-        gate.dataset.introState = 'entered';
+        setIntroState('entered');
         if (!focusHeading) return;
         const heading = overview.querySelector<HTMLElement>('h2');
         heading?.setAttribute('tabindex', '-1');
@@ -148,7 +153,7 @@ const rows: Key[][] = [
         : autoAdvance
           ? 'Typing complete. Enter will be pressed automatically.'
           : 'Typing animation skipped. Activate Open Overview to continue.';
-      if (gate?.dataset.introState !== 'entered') gate?.setAttribute('data-intro-state', 'active');
+      if (gate?.dataset.introState !== 'entered') setIntroState('active');
       if (autoAdvance) timers.push(window.setTimeout(pressEnterAndOpen, completedTitleHold));
     };
 
@@ -207,7 +212,7 @@ const rows: Key[][] = [
     if (isDesignMode) station.dataset.designMode = 'true';
 
     if (!isDesignMode && isReturningVisitor) {
-      gate?.setAttribute('data-intro-state', 'entered');
+      setIntroState('entered');
       return;
     }
 
@@ -233,7 +238,7 @@ const rows: Key[][] = [
     } else {
       if (output) output.textContent = '';
       station.dataset.typingState = 'waiting';
-      gate?.setAttribute('data-intro-state', 'active');
+      setIntroState('active');
     }
 
     if (document.documentElement.dataset.motion !== 'reduced' && 'IntersectionObserver' in window) {

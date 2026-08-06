@@ -94,6 +94,7 @@ const personSchema = {
         root.dataset.introVisit = root.dataset.introMode === 'design'
           ? 'first'
           : (introSeen ? 'returning' : 'first');
+        root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered';
         document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#0d121b' : '#f4f0e7');
       })();
     </script>
