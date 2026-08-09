@@ -5,9 +5,16 @@ if (deck) {
   const panelsById = new Map(panels.map((panel) => [panel.id, panel]));
   const sectionLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-section-link]'));
   const defaultSection = deck.dataset.defaultSection ?? panels[0]?.id;
+  const legacySections = new Map([
+    ['work', 'projects'],
+    ['about', 'overview'],
+    ['contact', 'overview'],
+  ]);
 
   const sectionFromHash = () => {
-    const id = decodeURIComponent(window.location.hash.slice(1));
+    const requestedId = decodeURIComponent(window.location.hash.slice(1));
+    const id = legacySections.get(requestedId) ?? requestedId;
+    if (id !== requestedId) window.history.replaceState({ section: id }, '', `#${id}`);
     return panelsById.has(id) ? id : defaultSection;
   };
 
@@ -52,7 +59,8 @@ if (deck) {
     const url = new URL(link.href, window.location.href);
     const currentPath = window.location.pathname.replace(/\/+$/, '');
     const targetPath = url.pathname.replace(/\/+$/, '');
-    const id = decodeURIComponent(url.hash.slice(1));
+    const requestedId = decodeURIComponent(url.hash.slice(1));
+    const id = legacySections.get(requestedId) ?? requestedId;
     if (url.origin !== window.location.origin || targetPath !== currentPath || !panelsById.has(id)) return;
 
     event.preventDefault();

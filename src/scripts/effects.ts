@@ -1,7 +1,8 @@
 const root = document.documentElement;
 const reveals = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (reveals.length && root.dataset.motion !== 'reduced' && 'IntersectionObserver' in window) {
+if (reveals.length && !reducedMotion && 'IntersectionObserver' in window) {
   root.classList.add('effects-ready');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {

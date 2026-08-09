@@ -1,11 +1,9 @@
 export const projectCategories = [
-  'AI Engineering',
-  'AI Safety / Research',
-  'Data Science',
-  'Forecasting',
-  'Quant Research',
-  'Software Engineering',
-  'Computer Vision',
+  'AI',
+  'ML',
+  'Software Dev',
+  'Quant',
+  'Data',
 ] as const;
 
 export type ProjectCategory = (typeof projectCategories)[number];
@@ -48,8 +46,8 @@ export const projects: Project[] = [
     slug: 'grounddesk',
     title: 'GroundDesk',
     subtitle: 'Evidence-Grounded Support Analytics Copilot',
-    category: 'AI Engineering',
-    categories: ['AI Engineering', 'Data Science', 'Software Engineering'],
+    category: 'AI',
+    categories: ['AI', 'Software Dev', 'Data'],
     summary: 'A support analytics product for cited answers, answer traces, and safe escalation when evidence is insufficient.',
     longDescription: 'GroundDesk ingests Markdown, text files, PDFs, and public URLs; performs hybrid retrieval; generates cited answers; stores answer traces in PostgreSQL; and safely escalates unsupported or ambiguous questions.',
     technologies: ['Python', 'FastAPI', 'Gemini API', 'Qdrant', 'Supabase PostgreSQL'],
@@ -75,8 +73,8 @@ export const projects: Project[] = [
   {
     slug: 'mlp-trainer-agentic-tutor',
     title: 'MLP Trainer + Agentic LLM Tutor',
-    category: 'Software Engineering',
-    categories: ['Software Engineering', 'AI Engineering'],
+    category: 'Software Dev',
+    categories: ['Software Dev', 'AI', 'ML'],
     summary: 'A live neural-network visualizer paired with an observable, streaming tutor for learning by inspection.',
     longDescription: 'The platform implements a 2-4-1 neural network with forward propagation, backpropagation, MSE loss, SGD, deterministic initialization, and live inspection of weights, activations, loss curves, and predictions. It also includes an agentic AI tutor with tool calling, bounded multi-turn memory, server-sent event streaming, MCP integration, and observability.',
     technologies: ['Rust', 'Axum', 'Tokio', 'React', 'TypeScript', 'FastAPI', 'Groq API', 'MCP', 'Langfuse', 'OpenTelemetry', 'Docker'],
@@ -98,8 +96,8 @@ export const projects: Project[] = [
     slug: 'nrg',
     title: 'NRG',
     subtitle: 'Spanish Power Price Forecasting and Reporting Platform',
-    category: 'Forecasting',
-    categories: ['Forecasting', 'Data Science', 'Software Engineering'],
+    category: 'Data',
+    categories: ['Data', 'ML', 'Software Dev'],
     summary: 'A research platform for validated energy-market data, time-series forecasts, backtests, and reporting.',
     longDescription: 'NRG loads Spanish energy-market data into PostgreSQL, validates it with SQL data-quality checks, exports analytical Parquet marts, trains time-series models, and exposes forecasts and backtests through an API and dashboard.',
     technologies: ['Python', 'SQL', 'PostgreSQL', 'scikit-learn', 'MLflow', 'FastAPI', 'React', 'TypeScript'],
@@ -121,8 +119,8 @@ export const projects: Project[] = [
     slug: 'qnt',
     title: 'QNT',
     subtitle: 'Regime-Aware Quantitative Research Platform',
-    category: 'Quant Research',
-    categories: ['Quant Research', 'Data Science'],
+    category: 'Quant',
+    categories: ['Quant', 'Data', 'ML'],
     summary: 'A reproducible research environment for point-in-time features, walk-forward signals, and cost-aware strategy evaluation.',
     longDescription: 'QNT retrieves market prices and optional macroeconomic data, creates point-in-time features, generates momentum and walk-forward Ridge signals, and evaluates long-only strategies with transaction costs.',
     technologies: ['Python', 'Pandas', 'scikit-learn', 'SQLite', 'Parquet', 'Streamlit'],
@@ -134,8 +132,8 @@ export const projects: Project[] = [
     slug: 'deeplense',
     title: 'DeepLense',
     subtitle: 'Gravitational Lensing Image Classification',
-    category: 'Computer Vision',
-    categories: ['Computer Vision', 'Data Science'],
+    category: 'ML',
+    categories: ['ML', 'AI'],
     summary: 'Scientific machine learning with equivariant and conventional convolutional networks for lensing images.',
     longDescription: 'DeepLense was developed for the ML4Sci Google Summer of Code test, using equivariant and conventional convolutional networks to classify gravitational-lensing images and detect dark-matter substructure.',
     technologies: ['PyTorch', 'scikit-learn', 'ESCNN', 'CNNs', 'ROC-AUC'],
@@ -146,8 +144,8 @@ export const projects: Project[] = [
   {
     slug: 'machine-unlearning-vision-language-models',
     title: 'Machine Unlearning in Vision-Language Models',
-    category: 'AI Safety / Research',
-    categories: ['AI Safety / Research', 'Computer Vision'],
+    category: 'ML',
+    categories: ['ML', 'AI'],
     summary: 'An ongoing study of selective forgetting in frozen CLIP models using parameter-efficient adapters and evaluation trade-offs.',
     longDescription: 'Built a machine-unlearning pipeline for frozen CLIP vision-language models using CIFAR-10 and CIFAR-100 retain/forget splits and adapter-only checkpoints. The work compares parameter-efficient unlearning against several baselines and measures retain, forget, sibling-class, membership-inference, and semantic-subspace behavior.',
     technologies: ['CLIP', 'LoRA', 'H-TGSD', 'CIFAR-10', 'CIFAR-100', 'SLURM'],
@@ -172,8 +170,8 @@ export const projects: Project[] = [
   {
     slug: 'finetuning-defence-adversarial-datasets',
     title: 'Finetuning Defence Strategies for Adversarial Datasets',
-    category: 'AI Safety / Research',
-    categories: ['AI Safety / Research', 'Data Science'],
+    category: 'AI',
+    categories: ['AI', 'ML'],
     summary: 'A robustness study of bounded intermediate activations across adversarial NLP model variants.',
     longDescription: 'Studied adversarial NLP threats across character, word, sentence, and multi-level perturbations and benchmarked bounded intermediate activation functions across DistilBERT, InfoBERT, and RanMASK variants.',
     technologies: ['DistilBERT', 'InfoBERT', 'RanMASK', 'ANLI', 'BReLU', 'RGeLU', 't-Sigmoid'],
@@ -187,3 +185,13 @@ export const projects: Project[] = [
 
 export const featuredProjects = projects.filter((project) => project.featured);
 export const detailProjects = projects.filter((project) => project.detail);
+
+export const projectGroups = projectCategories.map((category) => ({
+  category,
+  projects: projects.filter((project) => project.category === category),
+}));
+
+export const featuredProjectGroups = projectCategories.map((category) => ({
+  category,
+  projects: featuredProjects.filter((project) => project.category === category),
+}));

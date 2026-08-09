@@ -1,38 +1,33 @@
 ---
 import type { Project } from '@/data/projects';
 import { withBase } from '@/data/site';
-import ProjectVisual from './ProjectVisual.astro';
 
-interface Props { project: Project; index: number; variant?: 'featured' | 'archive'; }
-const { project, index, variant = 'featured' } = Astro.props;
+interface Props { project: Project; index: number; variant?: 'featured' | 'archive'; headingLevel?: 3 | 4; }
+const { project, index, variant = 'featured', headingLevel = 3 } = Astro.props;
 const hasCaseStudy = Boolean(project.detail);
 const transitionStyle = `--project-title-vt: project-${project.slug}; --project-visual-vt: visual-${project.slug};`;
+const HeadingTag = headingLevel === 4 ? 'h4' : 'h3';
 ---
 
 <article
-  class:list={['project-card', `project-card-${variant}`, 'speed-lines']}
+  class:list={['project-card', `project-card-${variant}`]}
   style={transitionStyle}
   data-project-card
   data-categories={project.categories.join('|')}
   data-reveal
 >
-  <div class="project-media">
-    <ProjectVisual type={project.visualType} label={project.category} title={`${project.title} project diagram`} />
-  </div>
   <div class="project-content">
     <header class="project-header">
-      <span class="project-number">Chapter / {String(index + 1).padStart(2, '0')}</span>
+      <span class="project-number">{project.category} / {String(index + 1).padStart(2, '0')}</span>
       {project.dates && <span class="meta">{project.dates}</span>}
     </header>
     <div class="project-title-row">
-      <h3>{project.title}</h3>
+      <HeadingTag class="project-title">{project.title}</HeadingTag>
       <span class="project-arrow" aria-hidden="true">↗</span>
     </div>
     {project.subtitle && <p class="project-subtitle">{project.subtitle}</p>}
     <p class="project-summary">{project.summary}</p>
-    <div class="project-evidence" aria-label={`${project.title} selected evidence`}>
-      {project.metrics.slice(0, 2).map((metric, metricIndex) => <div><span class="meta">M{metricIndex + 1}</span><strong>{metric}</strong></div>)}
-    </div>
+    {project.metrics[0] && <p class="project-signal"><span class="meta">Evidence</span>{project.metrics[0]}</p>}
     <ul class="tag-list" aria-label={`${project.title} technologies`}>
       {project.technologies.slice(0, variant === 'archive' ? 6 : 5).map((technology) => <li class="tag">{technology}</li>)}
     </ul>
@@ -41,9 +36,10 @@ const transitionStyle = `--project-title-vt: project-${project.slug}; --project-
         {hasCaseStudy && <a class="text-link" href={withBase(`/projects/${project.slug}/`)}>Read case study</a>}
         {project.liveUrl && <a class="text-link" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live site</a>}
         {project.repositoryUrl && <a class="text-link" href={project.repositoryUrl} target="_blank" rel="noopener noreferrer">Repository</a>}
+        {project.reportUrl && <a class="text-link" href={project.reportUrl} target="_blank" rel="noopener noreferrer">Report</a>}
       </div>
       {!hasCaseStudy && !project.liveUrl && !project.repositoryUrl && <span class="project-private meta">Public link not supplied</span>}
-      <span class="project-category meta">{project.categories.join(' / ')}</span>
+      <span class="project-category meta">{project.categories.join(' · ')}</span>
     </footer>
   </div>
 </article>

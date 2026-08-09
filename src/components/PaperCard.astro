@@ -1,0 +1,22 @@
+---
+import type { PaperReference } from '@/data/research';
+import { withBase } from '@/data/site';
+
+interface Props { paper: PaperReference; index: number; headingLevel?: 3 | 4; }
+const { paper, index, headingLevel = 3 } = Astro.props;
+const HeadingTag = headingLevel === 4 ? 'h4' : 'h3';
+---
+
+<article class="paper-card" data-reveal>
+  <header class="paper-card-header">
+    <span class="paper-status">{paper.status}</span>
+    <span class="meta">Paper / 0{index + 1}</span>
+  </header>
+  <p class="paper-citation">{paper.authors} · {paper.year}</p>
+  <HeadingTag class="paper-card-title">{paper.title}</HeadingTag>
+  <p>{paper.connection}</p>
+  <footer class="paper-card-links">
+    <a class="text-link" href={paper.paperUrl} target="_blank" rel="noopener noreferrer">Read paper</a>
+    <a class="text-link" href={withBase(`/projects/${paper.detailSlug}/`)}>See project context</a>
+  </footer>
+</article>

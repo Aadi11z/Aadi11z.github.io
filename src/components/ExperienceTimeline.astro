@@ -2,30 +2,24 @@
 import { experience } from '@/data/experience';
 ---
 
-<div class="experience-layout">
-  <div class="experience-intro">
-    <span class="eyebrow">Professional experience</span>
-    <p class="lede">Production forecasting, automation, scenario analysis, and internal ML tooling for regional planning workflows.</p>
-  </div>
-  <div>
-    {experience.map((item) => (
-      <article class="experience-card">
-        <div class="experience-top">
-          <span class="experience-monogram" aria-hidden="true">{item.monogram}</span>
-          <div class="experience-title"><h3>{item.company}</h3><p>{item.role} · {item.location}</p></div>
-          <span class="meta">{item.dates}</span>
+<div class="experience-list">
+  {experience.map((item) => (
+    <article class="experience-card" data-reveal>
+      <header class="experience-top">
+        <span class="experience-monogram" aria-hidden="true">{item.monogram}</span>
+        <div class="experience-title">
+          <span class="eyebrow">{item.role}</span>
+          <h3>{item.company}</h3>
+          <p>{item.location} · {item.dates}</p>
         </div>
+      </header>
+      <div class="experience-body">
         <p class="experience-summary">{item.summary}</p>
         <ul class="experience-bullets">
           {item.bullets.map((bullet) => <li>{bullet}</li>)}
         </ul>
-        <div class="certification-row">
-          <span class="meta certification-label">Dataiku certifications</span>
-          <ul class="certification-list">
-            {item.certifications.map((certification) => <li>{certification}</li>)}
-          </ul>
-        </div>
-      </article>
-    ))}
-  </div>
+        <a class="text-link" href={item.sourceUrl} target="_blank" rel="noopener noreferrer">View the experience note on LinkedIn</a>
+      </div>
+    </article>
+  ))}
 </div>

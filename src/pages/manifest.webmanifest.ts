@@ -9,8 +9,8 @@ export const GET: APIRoute = () => {
     start_url: withBase('/'),
     scope: withBase('/'),
     display: 'standalone',
-    background_color: '#f4f0e7',
-    theme_color: '#2f55d4',
+    background_color: '#efe8d1',
+    theme_color: '#254c8b',
     icons: [{ src: withBase('/favicon.svg'), sizes: 'any', type: 'image/svg+xml' }],
     id: new URL(withBase('/'), siteConfig.url).toString(),
   };

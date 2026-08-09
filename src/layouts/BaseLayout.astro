@@ -18,7 +18,7 @@ interface Props {
 
 const {
   title = 'Aaditya Bhatnagar — ML Engineer, Data Scientist and AI Researcher',
-  description = 'Portfolio of Aaditya Bhatnagar, a Dubai-based computer science student building machine-learning systems, grounded AI products, quantitative research platforms, and machine-unlearning research.',
+  description = 'Portfolio of Aaditya Bhatnagar, a Dubai-based ML engineer and data scientist building reliable AI products, quantitative research platforms, and machine-learning systems.',
   type = 'website',
   noindex = false,
   layout = 'document',
@@ -38,7 +38,6 @@ const personSchema = {
   email: `mailto:${profile.email}`,
   jobTitle: 'ML Engineer and Data Scientist',
   address: { '@type': 'PostalAddress', addressLocality: 'Dubai', addressCountry: 'AE' },
-  alumniOf: { '@type': 'CollegeOrUniversity', name: 'BITS Pilani, Dubai Campus' },
   sameAs: Object.values(profile.links),
 };
 ---
@@ -48,7 +47,7 @@ const personSchema = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="theme-color" content="#f4f0e7" data-theme-color />
+    <meta name="theme-color" content="#efe8d1" data-theme-color />
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
@@ -61,7 +60,7 @@ const personSchema = {
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Aaditya Bhatnagar Editorial Manga Lab portfolio card" />
+    <meta property="og:image:alt" content="Aaditya Bhatnagar professional portfolio card" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
@@ -74,11 +73,9 @@ const personSchema = {
         const root = document.documentElement;
         root.classList.add('js');
         let savedTheme = null;
-        let savedMotion = null;
         let introSeen = false;
         try {
           savedTheme = localStorage.getItem('theme');
-          savedMotion = localStorage.getItem('motion');
           const introKey = root.dataset.introSessionKey;
           introSeen = introKey ? sessionStorage.getItem(introKey) === 'seen' : false;
         } catch { /* Storage may be disabled. */ }
@@ -86,16 +83,14 @@ const personSchema = {
         const theme = savedTheme === 'dark' || savedTheme === 'light'
           ? savedTheme
           : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        const motion = savedMotion === 'full' || savedMotion === 'reduced'
-          ? savedMotion
-          : (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full');
+        const requestedSection = decodeURIComponent(window.location.hash.slice(1));
+        const skipIntro = root.dataset.introMode !== 'design' && requestedSection && requestedSection !== 'overview';
         root.dataset.theme = theme;
-        root.dataset.motion = motion;
         root.dataset.introVisit = root.dataset.introMode === 'design'
           ? 'first'
-          : (introSeen ? 'returning' : 'first');
+          : (introSeen || skipIntro ? 'returning' : 'first');
         root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered';
-        document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#0d121b' : '#f4f0e7');
+        document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#05080e' : '#efe8d1');
       })();
     </script>
   </head>

@@ -2,31 +2,36 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
-import { projectCategories, projects } from '@/data/projects';
+import { projectGroups, projects } from '@/data/projects';
 import '@/styles/projects.css';
 ---
 
 <BaseLayout title="Projects — Aaditya Bhatnagar" description="Technical projects and research by Aaditya Bhatnagar across AI engineering, machine learning, forecasting, quantitative research, computer vision, and software systems.">
   <section class="page-hero shell">
-    <div class="page-hero-index"><span class="eyebrow">Project archive</span><span class="meta">{String(projects.length).padStart(2, '0')} records / Selected work</span></div>
-    <h1>Systems, experiments<br />and <em>research.</em></h1>
+    <div class="page-hero-index"><span class="eyebrow">Projects</span><span class="meta">{String(projects.length).padStart(2, '0')} records / 05 topics</span></div>
+    <h1>Projects, grouped<br />by <em>practice.</em></h1>
     <div class="page-hero-copy">
-      <p>A working archive of technical projects, research systems, and evaluation work. Every metric stays attached to its context, and only supplied public resources are linked.</p>
-      <p class="meta">FILTER / INSPECT / OPEN CASE FILE</p>
+      <p>A working archive of technical projects and research systems across AI, machine learning, software development, quantitative work, and data.</p>
+      <p class="meta">BROWSE / INSPECT / OPEN CASE FILE</p>
     </div>
   </section>
   <section class="shell archive-section" aria-labelledby="archive-title">
-    <SectionHeading id="archive-title" index="Index / All work" title="Project index" description="Filter by working area or scan the complete archive. All entries remain available when JavaScript is disabled." />
-    <div class="project-filters" data-project-filters aria-label="Filter projects by category">
-      <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All work</button>
-      {projectCategories.map((category) => <button class="filter-button" type="button" data-filter={category} aria-pressed="false">{category}</button>)}
-    </div>
-    <p class="filter-status meta" data-filter-status aria-live="polite">{projects.length} projects shown</p>
-    <div class="archive-grid">
-      {projects.map((project, index) => <ProjectCard project={project} index={index} variant="archive" />)}
+    <SectionHeading id="archive-title" index="Index / All projects" title="Five working areas" description="Each project appears once under its primary topic; secondary areas remain visible on the card." />
+    <nav class="topic-index topic-index-archive" aria-label="Project topics">
+      {projectGroups.map((group) => <a href={`#${group.category.toLowerCase().replaceAll(' ', '-')}`}><span>{group.category}</span><strong>{String(group.projects.length).padStart(2, '0')}</strong></a>)}
+    </nav>
+    <div class="project-groups">
+      {projectGroups.map((group) => (
+        <section class="project-topic" id={group.category.toLowerCase().replaceAll(' ', '-')} aria-labelledby={`${group.category.toLowerCase().replaceAll(' ', '-')}-title`}>
+          <header class="project-topic-header">
+            <h2 id={`${group.category.toLowerCase().replaceAll(' ', '-')}-title`}>{group.category}</h2>
+            <p>{String(group.projects.length).padStart(2, '0')} {group.projects.length === 1 ? 'project' : 'projects'}</p>
+          </header>
+          <div class="project-card-grid">
+            {group.projects.map((project) => <ProjectCard project={project} index={projects.indexOf(project)} variant="archive" />)}
+          </div>
+        </section>
+      ))}
     </div>
   </section>
-  <script>
-    import '@/scripts/project-filters';
-  </script>
 </BaseLayout>

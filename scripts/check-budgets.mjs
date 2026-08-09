@@ -49,8 +49,8 @@ for (const file of imageFiles) {
 }
 
 const css = cssFiles.map((file) => readFileSync(file, 'utf8')).join('\n');
-if (!css.includes('prefers-reduced-motion') || !css.includes('data-motion') || !css.includes('reduced')) {
-  throw new Error('Generated CSS is missing system or user-controlled reduced-motion handling.');
+if (!css.includes('prefers-reduced-motion')) {
+  throw new Error('Generated CSS is missing system reduced-motion handling.');
 }
 
 console.log(`Budget checks passed: CSS ${cssGzip} B gzip, JS ${jsGzip} B gzip, ${imageFiles.length} images within ${IMAGE_BUDGET} B each.`);

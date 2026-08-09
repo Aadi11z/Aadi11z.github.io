@@ -13,6 +13,16 @@ export type ResearchEntryData = {
   detailSlug?: string;
 };
 
+export type PaperReference = {
+  title: string;
+  authors: string;
+  year: string;
+  status: 'Implementation reference';
+  paperUrl: string;
+  connection: string;
+  detailSlug: string;
+};
+
 export const research: ResearchEntryData[] = [
   {
     title: 'Machine Unlearning in Vision-Language Models',
@@ -42,3 +52,24 @@ export const research: ResearchEntryData[] = [
     openQuestion: 'How consistently do bounded activations generalize across model architectures and perturbation levels?',
   },
 ] as const;
+
+export const papers: PaperReference[] = [
+  {
+    title: 'Learning Transferable Visual Models From Natural Language Supervision',
+    authors: 'Alec Radford et al.',
+    year: '2021',
+    status: 'Implementation reference',
+    paperUrl: 'https://arxiv.org/abs/2103.00020',
+    connection: 'CLIP ViT-B/16 is the frozen vision-language backbone used in the machine-unlearning study.',
+    detailSlug: 'machine-unlearning-vision-language-models',
+  },
+  {
+    title: 'LoRA: Low-Rank Adaptation of Large Language Models',
+    authors: 'Edward J. Hu et al.',
+    year: '2021',
+    status: 'Implementation reference',
+    paperUrl: 'https://arxiv.org/abs/2106.09685',
+    connection: 'The unlearning pipeline applies low-rank adapters while keeping the base CLIP model frozen.',
+    detailSlug: 'machine-unlearning-vision-language-models',
+  },
+];

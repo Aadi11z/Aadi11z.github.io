@@ -1,6 +1,6 @@
 # Aaditya Bhatnagar — Portfolio
 
-A static technical portfolio for Aaditya Bhatnagar. The “Editorial Manga Lab” design combines an evidence-led editorial layout with restrained manga-panel framing, original technical SVGs, native page transitions, and small interactive research tools.
+A static technical portfolio for Aaditya Bhatnagar. The site presents a concise professional profile, topic-grouped projects, research and paper references, production experience, original technical SVGs, native page transitions, and small interactive research tools.
 
 ## Stack
 
@@ -8,7 +8,7 @@ A static technical portfolio for Aaditya Bhatnagar. The “Editorial Manga Lab�
 - TypeScript and native `.astro` components
 - Typed content modules in `src/data/`
 - Modular tokenized CSS in `src/styles/`
-- Native browser JavaScript for navigation, filters, preferences, and explorers
+- Native browser JavaScript for navigation, theme preference, and explorers
 - No backend, CMS, client framework, remote font, or animation library
 
 Node 24 is pinned in `.node-version` for CI and Cloudflare Pages.
@@ -59,11 +59,10 @@ PUBLIC_SITE_URL=https://aadi11z.github.io PUBLIC_BASE_PATH=website npm run gener
 
 ## Content editing
 
-- `src/data/profile.ts` — identity, education, About copy, and achievement
-- `src/data/projects.ts` — archive records, featured work, project evidence, and detail sections
-- `src/data/research.ts` — research-note presentation
-- `src/data/experience.ts` — professional experience and certifications
-- `src/data/skills.ts` — capabilities and primary tools
+- `src/data/profile.ts` — identity, professional profile copy, contact, and social links
+- `src/data/projects.ts` — topic-grouped project records, evidence, and detail sections
+- `src/data/research.ts` — research projects and primary paper references
+- `src/data/experience.ts` — professional experience with its public LinkedIn source
 - `src/data/playgrounds/unlearning.ts` — measured machine-unlearning explorer data
 
 Project links are optional. Add `liveUrl`, `repositoryUrl`, or `reportUrl` only when the public URL is real. A project receives a static detail page when it has a `detail` object in `src/data/projects.ts`.
@@ -75,17 +74,17 @@ Explorer observations require an explicit provenance value. Missing experiment r
 - `src/components/visuals/` — original project and hero SVG illustrations
 - `src/components/playgrounds/` — progressively enhanced static explorers
 - `src/scripts/` — small native-browser interaction modules
-- `src/styles/tokens.css` — color, spacing, type, and motion tokens
+- `src/styles/tokens.css` — cream/light and black-blue/dark theme tokens, spacing, and type
 - `src/styles/global.css` — reset, typography, and shared utilities
 - `src/styles/layout.css` — navigation, footer, résumé, and 404 layouts
 - `src/styles/hero.css` — floating keyboard intro, intro states, and Overview composition
 - `src/styles/home.css` — homepage sections
 - `src/styles/projects.css` — archive, project cards, and case studies
-- `src/styles/research.css` — research-note presentation
+- `src/styles/research.css` — research-project and paper-card presentation
 - `src/styles/playgrounds.css` — explorer and lab layouts
 - `src/styles/effects.css` — reduced motion, reveals, and native View Transitions
 
-Theme and motion preferences follow the user’s system setting on first visit and persist manual choices in `localStorage`. Important content is rendered during the Astro build and remains available without JavaScript.
+Theme follows the user’s system setting on first visit and persists a manual light/dark choice in `localStorage`. Motion follows the operating system’s reduced-motion preference without a site-level control. Important content is rendered during the Astro build and remains available without JavaScript.
 
 ## Résumé privacy
 

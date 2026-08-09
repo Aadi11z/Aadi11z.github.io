@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="Standalone prototype for a diagonal lightning and rotating-energy collision animation."
+    />
+    <title>Energy Collision Animation Prototype</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080b12'/%3E%3Cpath d='M34 4 17 34h13l-3 26 20-34H34Z' fill='%2377cff7'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="prototype-page">
+      <header class="prototype-header">
+        <a class="prototype-mark" href="./" aria-label="Restart prototype">AB / EXP-01</a>
+        <p>Standalone motion study</p>
+      </header>
+
+      <section class="prototype-content" aria-labelledby="prototype-title">
+        <p class="eyebrow">Diagonal collision / CSS + SVG</p>
+        <h1 id="prototype-title">Energy collision study</h1>
+        <p class="lede">
+          Two original, technique-inspired energy forms meet at the center, trigger a
+          controlled whiteout, and reveal the underlying page again.
+        </p>
+
+        <div class="prototype-grid" aria-label="Animation sequence">
+          <article>
+            <span>01</span>
+            <h2>Charge</h2>
+            <p>Lightning enters from the upper-left while rotating energy rises from below.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h2>Collision</h2>
+            <p>The two hand-drawn silhouettes converge diagonally at the viewport center.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h2>Return</h2>
+            <p>A radial whiteout expands, holds briefly, then contracts toward the impact.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="prototype-controls">
+        <button class="sound-button" type="button" aria-pressed="true" data-sound-toggle>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 9v6h4l5 4V5L9 9H5Zm12.5 3a4.5 4.5 0 0 0-2-3.74v7.48a4.5 4.5 0 0 0 2-3.74Zm-2-8.6v2.08a7 7 0 0 1 0 13.04v2.08a9 9 0 0 0 0-17.2Z" />
+          </svg>
+          <span>Sound on</span>
+        </button>
+
+        <button class="play-button" type="button" data-play-animation>
+          <span>Play collision</span>
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M7 4.5 14 10l-7 5.5z" />
+          </svg>
+        </button>
+      </div>
+
+      <p class="keyboard-hint">Press <kbd>Esc</kbd> to skip the sequence.</p>
+      <p class="sr-only" aria-live="polite" data-animation-status>Animation ready.</p>
+    </main>
+
+    <div class="collision-stage" data-collision-stage aria-hidden="true">
+      <div class="collision-atmosphere"></div>
+
+      <div class="attack attack--lightning">
+        <svg class="hand hand--lightning" viewBox="0 0 380 210" role="presentation">
+          <defs>
+            <linearGradient id="lightning-sleeve" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#14274a" />
+              <stop offset="1" stop-color="#07101f" />
+            </linearGradient>
+            <linearGradient id="lightning-skin" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#d5a68f" />
+              <stop offset="1" stop-color="#8f5f54" />
+            </linearGradient>
+          </defs>
+          <path class="hand__sleeve" d="M4 58 126 46l74 95-82 60L4 181Z" fill="url(#lightning-sleeve)" />
+          <path
+            class="hand__skin"
+            d="M105 56c33-18 74-25 109-14 21 7 36 23 54 36l77 51c12 8 18 20 12 30-7 12-22 11-34 4l-68-36 65 51c11 9 12 21 4 29-8 9-21 6-31-2l-69-53 48 46c10 10 8 22-1 29-9 7-21 1-29-7l-52-49c-12-11-27-18-43-20l-42-5-37-56Z"
+            fill="url(#lightning-skin)"
+          />
+          <path class="hand__ink" d="m153 84 103 43m-121-18 89 43m-63-84 88 67m-70 3 47 34" />
+          <path class="hand__cuff" d="m99 49 51 100-34 43-56-107Z" />
+        </svg>
+
+        <div class="lightning-energy">
+          <span class="lightning-energy__aura"></span>
+          <span class="lightning-energy__core"></span>
+          <i style="--angle: -76deg; --length: 132px; --delay: -0.08s"></i>
+          <i style="--angle: -44deg; --length: 102px; --delay: -0.19s"></i>
+          <i style="--angle: -17deg; --length: 126px; --delay: -0.32s"></i>
+          <i style="--angle: 13deg; --length: 118px; --delay: -0.13s"></i>
+          <i style="--angle: 43deg; --length: 142px; --delay: -0.26s"></i>
+          <i style="--angle: 75deg; --length: 112px; --delay: -0.38s"></i>
+          <i style="--angle: 112deg; --length: 122px; --delay: -0.21s"></i>
+          <i style="--angle: 153deg; --length: 94px; --delay: -0.34s"></i>
+          <i style="--angle: 191deg; --length: 108px; --delay: -0.15s"></i>
+          <i style="--angle: 225deg; --length: 138px; --delay: -0.29s"></i>
+          <i style="--angle: 267deg; --length: 96px; --delay: -0.1s"></i>
+          <i style="--angle: 309deg; --length: 120px; --delay: -0.24s"></i>
+          <b style="--spark-x: -32%; --spark-y: -72%; --spark-r: -18deg"></b>
+          <b style="--spark-x: 22%; --spark-y: -46%; --spark-r: 31deg"></b>
+          <b style="--spark-x: -55%; --spark-y: 28%; --spark-r: 14deg"></b>
+          <b style="--spark-x: 18%; --spark-y: 62%; --spark-r: -27deg"></b>
+        </div>
+      </div>
+
+      <div class="attack attack--orb">
+        <svg class="hand hand--orb" viewBox="0 0 380 210" role="presentation">
+          <defs>
+            <linearGradient id="orb-sleeve" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#461a23" />
+              <stop offset="1" stop-color="#190a13" />
+            </linearGradient>
+            <linearGradient id="orb-skin" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#dbad93" />
+              <stop offset="1" stop-color="#956052" />
+            </linearGradient>
+          </defs>
+          <path class="hand__sleeve" d="M4 58 126 46l74 95-82 60L4 181Z" fill="url(#orb-sleeve)" />
+          <path
+            class="hand__skin"
+            d="M105 56c33-18 74-25 109-14 21 7 36 23 54 36l77 51c12 8 18 20 12 30-7 12-22 11-34 4l-68-36 65 51c11 9 12 21 4 29-8 9-21 6-31-2l-69-53 48 46c10 10 8 22-1 29-9 7-21 1-29-7l-52-49c-12-11-27-18-43-20l-42-5-37-56Z"
+            fill="url(#orb-skin)"
+          />
+          <path class="hand__ink" d="m153 84 103 43m-121-18 89 43m-63-84 88 67m-70 3 47 34" />
+          <path class="hand__cuff" d="m99 49 51 100-34 43-56-107Z" />
+        </svg>
+
+        <div class="orb-energy">
+          <span class="orb-energy__shell"></span>
+          <span class="orb-energy__core"></span>
+          <i class="orb-energy__ring orb-energy__ring--one"></i>
+          <i class="orb-energy__ring orb-energy__ring--two"></i>
+          <i class="orb-energy__ring orb-energy__ring--three"></i>
+          <b class="orb-energy__filament orb-energy__filament--one"></b>
+          <b class="orb-energy__filament orb-energy__filament--two"></b>
+          <b class="orb-energy__filament orb-energy__filament--three"></b>
+          <i class="orb-energy__trail orb-energy__trail--one"></i>
+          <i class="orb-energy__trail orb-energy__trail--two"></i>
+        </div>
+      </div>
+
+      <div class="impact" role="presentation">
+        <span class="impact__core"></span>
+        <span class="impact__lens"></span>
+        <span class="impact__ring"></span>
+        <span class="impact__wave impact__wave--one"></span>
+        <span class="impact__wave impact__wave--two"></span>
+        <i style="--ray: 0deg"></i>
+        <i style="--ray: 35deg"></i>
+        <i style="--ray: 72deg"></i>
+        <i style="--ray: 116deg"></i>
+        <i style="--ray: 159deg"></i>
+        <i style="--ray: 205deg"></i>
+        <i style="--ray: 252deg"></i>
+        <i style="--ray: 304deg"></i>
+      </div>
+
+      <div class="whiteout" data-whiteout></div>
+    </div>
+
+    <script type="module" src="./animation.js"></script>
+  </body>
+</html>

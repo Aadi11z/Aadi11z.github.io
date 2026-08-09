@@ -1,43 +1,14 @@
 ---
+import MechanicalKeyboard from '@/components/visuals/MechanicalKeyboard.astro';
 import { profile } from '@/data/profile';
-
-type Key = { label: string; value: string; size?: 'wide' | 'wider' | 'space'; enter?: boolean };
-
-const rows: Key[][] = [
-  [
-    { label: 'esc', value: 'escape', size: 'wide' },
-    ...'1234567890'.split('').map((value) => ({ label: value, value })),
-    { label: 'delete', value: 'backspace', size: 'wider' },
-  ],
-  [
-    { label: 'tab', value: 'tab', size: 'wide' },
-    ...'QWERTYUIOP'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
-    { label: '\\', value: '\\', size: 'wide' },
-  ],
-  [
-    { label: 'caps', value: 'capslock', size: 'wider' },
-    ...'ASDFGHJKL'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
-    { label: 'Enter ↵', value: 'enter', size: 'wider', enter: true },
-  ],
-  [
-    { label: 'shift', value: 'shift', size: 'wider' },
-    ...'ZXCVBNM'.split('').map((value) => ({ label: value, value: value.toLowerCase() })),
-    { label: 'shift', value: 'shift-right', size: 'wider' },
-  ],
-  [
-    { label: 'command', value: 'meta', size: 'wide' },
-    { label: 'option', value: 'option', size: 'wide' },
-    { label: '', value: 'space', size: 'space' },
-    { label: 'option', value: 'option-right', size: 'wide' },
-    { label: 'command', value: 'meta-right', size: 'wide' },
-  ],
-];
 ---
 
 <div class="typing-station" data-typing-station data-name={profile.name} aria-describedby="typing-station-description">
   <p id="typing-station-description" class="visually-hidden">An animated keyboard types {profile.name}. Press Enter to open the portfolio overview.</p>
+  <div class="typing-rgb-ambient" aria-hidden="true"></div>
 
   <div class="typing-nameplate">
+    <p class="typing-kicker">Portfolio Website</p>
     <div class="typing-title" aria-hidden="true">
       <span data-typed-name>{profile.name}</span>
       <span class="typing-cursor" aria-hidden="true"></span>
@@ -45,31 +16,12 @@ const rows: Key[][] = [
   </div>
 
   <div class="keyboard-scene">
-    <div class="keyboard-floor-glow" aria-hidden="true"></div>
     <div class="keyboard-float">
       <div class="keyboard-chassis">
-        <div class="keyboard-chassis-edge" aria-hidden="true"></div>
-        <div class="keyboard" role="group" aria-label="Animated mechanical keyboard">
-          {rows.map((row) => (
-            <div class="keyboard-row" role="presentation">
-              {row.map((key) => key.enter ? (
-                <button
-                  class:list={['keyboard-key', 'keyboard-enter', key.size && `keyboard-key-${key.size}`]}
-                  type="button"
-                  data-key={key.value}
-                  data-typing-enter
-                  aria-label="Open the portfolio overview"
-                >
-                  <span>{key.label}</span>
-                </button>
-              ) : (
-                <span class:list={['keyboard-key', key.size && `keyboard-key-${key.size}`]} data-key={key.value} aria-hidden="true">
-                  {key.label}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
+        <MechanicalKeyboard />
+        <button class="keyboard-enter" type="button" data-typing-enter aria-label="Open the portfolio overview">
+          <span class="visually-hidden">Open Overview</span>
+        </button>
       </div>
     </div>
   </div>
@@ -83,6 +35,33 @@ const rows: Key[][] = [
 
 <script>
   const stations = Array.from(document.querySelectorAll<HTMLElement>('[data-typing-station]'));
+  const physicalCodeMap: Record<string, string> = {
+    AltRight: 'alt-right',
+    BracketLeft: '[',
+    BracketRight: ']',
+    Backslash: '\\',
+    Comma: ',',
+    ControlRight: 'control-right',
+    Digit0: '0',
+    Digit1: '1',
+    Digit2: '2',
+    Digit3: '3',
+    Digit4: '4',
+    Digit5: '5',
+    Digit6: '6',
+    Digit7: '7',
+    Digit8: '8',
+    Digit9: '9',
+    Equal: '=',
+    MetaRight: 'meta',
+    Minus: '-',
+    Period: '.',
+    Quote: "'",
+    Semicolon: ';',
+    ShiftRight: 'shift-right',
+    Slash: '/',
+    Space: 'space',
+  };
 
   stations.forEach((station) => {
     const output = station.querySelector<HTMLElement>('[data-typed-name]');
@@ -97,22 +76,58 @@ const rows: Key[][] = [
     const completedTitleHold = 1200;
     const enterPressHold = 250;
     const root = document.documentElement;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const introSessionKey = root.dataset.introSessionKey;
     const isDesignMode = root.dataset.introMode === 'design';
     const isReturningVisitor = root.dataset.introVisit === 'returning';
     let timers: number[] = [];
     let hasPlayed = false;
+    let rgbPulse = 0;
+    let rgbReleaseTimer: number | undefined;
+    const rgbHues = [194, 218, 242, 266, 290, 314, 290, 266, 242, 218];
 
     const setIntroState = (state: 'active' | 'exiting' | 'entered') => {
       gate?.setAttribute('data-intro-state', state);
       root.dataset.heroIntroState = state;
     };
 
-    const clearTimers = () => {
+    const clearTimers = (preserveRgb = false) => {
       timers.forEach((timer) => window.clearTimeout(timer));
       timers = [];
       station.querySelectorAll('.is-pressed').forEach((key) => key.classList.remove('is-pressed'));
       station.removeAttribute('data-enter-state');
+      if (!preserveRgb) {
+        if (rgbReleaseTimer) window.clearTimeout(rgbReleaseTimer);
+        rgbReleaseTimer = undefined;
+        station.removeAttribute('data-rgb-active');
+        station.style.removeProperty('--keyboard-rgb-hue');
+      }
+    };
+
+    const triggerRgbPulse = (hue = rgbHues[rgbPulse++ % rgbHues.length]) => {
+      station.style.setProperty('--keyboard-rgb-hue', String(hue));
+      station.dataset.rgbActive = 'true';
+      if (rgbReleaseTimer) window.clearTimeout(rgbReleaseTimer);
+      rgbReleaseTimer = window.setTimeout(() => station.removeAttribute('data-rgb-active'), 650);
+      return hue;
+    };
+
+    const getVisualKeys = (keyValue: string) => Array.from(station.querySelectorAll<SVGGraphicsElement>('.mechanical-key[data-key]'))
+      .filter((key) => key.dataset.key === keyValue);
+
+    const pressVisualKeys = (keyValue: string, hue: number) => {
+      const keys = getVisualKeys(keyValue);
+      keys.forEach((key) => {
+        key.style.setProperty('--key-press-hue', String(hue));
+        key.classList.add('is-pressed');
+      });
+      return keys;
+    };
+
+    const getPhysicalKeyValue = (event: KeyboardEvent) => {
+      const mappedCode = physicalCodeMap[event.code];
+      if (mappedCode) return mappedCode;
+      return event.key.toLowerCase();
     };
 
     const openOverview = (focusHeading = false) => {
@@ -130,7 +145,7 @@ const rows: Key[][] = [
         heading?.setAttribute('tabindex', '-1');
         heading?.focus({ preventScroll: true });
       };
-      if (document.documentElement.dataset.motion === 'reduced') finish();
+      if (reducedMotion.matches) finish();
       else timers.push(window.setTimeout(finish, 260));
     };
 
@@ -139,12 +154,13 @@ const rows: Key[][] = [
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
       if (status) status.textContent = 'Enter pressed. Opening the portfolio overview.';
+      pressVisualKeys('enter', triggerRgbPulse(222));
       enter?.classList.add('is-pressed');
       timers.push(window.setTimeout(() => openOverview(focusHeading), enterPressHold));
     };
 
     const showCompleteTitle = (autoAdvance = true) => {
-      clearTimers();
+      clearTimers(true);
       if (output) output.textContent = name;
       station.dataset.typingState = 'complete';
       if (enter) enter.disabled = false;
@@ -162,8 +178,10 @@ const rows: Key[][] = [
       station.dataset.typingState = 'confirming';
       station.dataset.enterState = 'pressed';
       if (status) status.textContent = 'Enter key preview. The Overview transition remains disabled in design mode.';
+      const enterKeys = pressVisualKeys('enter', triggerRgbPulse(222));
       enter?.classList.add('is-pressed');
       timers.push(window.setTimeout(() => {
+        enterKeys.forEach((key) => key.classList.remove('is-pressed'));
         enter?.classList.remove('is-pressed');
         station.removeAttribute('data-enter-state');
         station.dataset.typingState = 'complete';
@@ -173,18 +191,17 @@ const rows: Key[][] = [
 
     const pressCharacterKey = (character: string) => {
       const keyValue = character === ' ' ? 'space' : character.toLowerCase();
-      const keys = Array.from(station.querySelectorAll<HTMLElement>(`[data-key="${keyValue}"]`));
+      const hue = triggerRgbPulse();
+      const keys = pressVisualKeys(keyValue, hue);
       if (character !== character.toLowerCase()) {
-        const shift = station.querySelector<HTMLElement>('[data-key="shift"]');
-        if (shift) keys.push(shift);
+        keys.push(...pressVisualKeys('shift', hue));
       }
-      keys.forEach((key) => key.classList.add('is-pressed'));
       const releaseTimer = window.setTimeout(() => keys.forEach((key) => key.classList.remove('is-pressed')), 115);
       timers.push(releaseTimer);
     };
 
     const play = () => {
-      if (!output || document.documentElement.dataset.motion === 'reduced') {
+      if (!output || reducedMotion.matches) {
         showCompleteTitle(false);
         return;
       }
@@ -193,6 +210,8 @@ const rows: Key[][] = [
       hasPlayed = true;
       if (enter) enter.disabled = true;
       output.textContent = '';
+      station.dataset.typingState = 'typing';
+      triggerRgbPulse(28);
       if (status) status.textContent = `Typing ${name}.`;
       sequence.forEach((character, index) => {
         const timer = window.setTimeout(() => {
@@ -218,6 +237,13 @@ const rows: Key[][] = [
 
     enter?.addEventListener('click', isDesignMode ? previewEnterPress : () => pressEnterAndOpen(true));
     document.addEventListener('keydown', (event) => {
+      if (event.repeat || gate?.dataset.introState === 'entered') return;
+      pressVisualKeys(getPhysicalKeyValue(event), triggerRgbPulse());
+    });
+    document.addEventListener('keyup', (event) => {
+      getVisualKeys(getPhysicalKeyValue(event)).forEach((key) => key.classList.remove('is-pressed'));
+    });
+    document.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' || event.repeat || station.dataset.typingState !== 'complete') return;
       if (event.target === enter) return;
       if (event.target instanceof Element && event.target.closest('a, button, input, select, textarea')) return;
@@ -225,15 +251,15 @@ const rows: Key[][] = [
       if (isDesignMode) previewEnterPress();
       else pressEnterAndOpen(true);
     });
-    window.addEventListener('motionchange', () => {
+    reducedMotion.addEventListener('change', () => {
       if (gate?.dataset.introState === 'entered') return;
-      if (document.documentElement.dataset.motion === 'reduced') {
+      if (reducedMotion.matches) {
         showCompleteTitle(false);
       }
       else play();
     });
 
-    if (document.documentElement.dataset.motion === 'reduced') {
+    if (reducedMotion.matches) {
       showCompleteTitle(false);
     } else {
       if (output) output.textContent = '';
@@ -241,14 +267,14 @@ const rows: Key[][] = [
       setIntroState('active');
     }
 
-    if (document.documentElement.dataset.motion !== 'reduced' && 'IntersectionObserver' in window) {
+    if (!reducedMotion.matches && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
         if (!entries.some((entry) => entry.isIntersecting) || hasPlayed) return;
         play();
         observer.disconnect();
       }, { threshold: .01 });
       observer.observe(station);
-    } else if (document.documentElement.dataset.motion !== 'reduced') {
+    } else if (!reducedMotion.matches) {
       play();
     }
   });

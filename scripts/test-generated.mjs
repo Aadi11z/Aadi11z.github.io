@@ -51,7 +51,8 @@ for (const file of htmlFiles) {
     for (const id of reference[1].split(/\s+/)) if (!ids.includes(id)) throw new Error(`Missing ARIA target ${id} in ${file}`);
   }
   if (!html.includes('id="main-content"') || !html.includes('href="#main-content"')) throw new Error(`Skip link target missing in ${file}`);
-  if (!html.includes('data-theme-toggle') || !html.includes('data-motion-control')) throw new Error(`Display preferences missing in ${file}`);
+  if (!html.includes('data-theme-toggle')) throw new Error(`Theme preference missing in ${file}`);
+  if (html.includes('data-motion-control') || html.includes("localStorage.getItem('motion')") || html.includes('data-motion=')) throw new Error(`Retired motion preference found in ${file}`);
   if (/href=["']\s*["']/.test(html) || /href=["']#["']/.test(html)) throw new Error(`Empty or placeholder href in ${file}`);
 
   const requiredMetadata = [/<title>[^<]+<\/title>/, /<meta name="description"/, /<link rel="canonical"/, /<meta property="og:title"/, /<meta property="og:description"/, /<meta property="og:image"/, /<meta name="twitter:card"/];
@@ -82,17 +83,30 @@ for (const link of internalLinks) {
 }
 
 const archiveHtml = readFileSync(join(dist, 'projects/index.html'), 'utf8');
-if ((archiveHtml.match(/data-filter=/g) ?? []).length < 8 || !archiveHtml.includes('data-project-card')) throw new Error('Project archive filters or cards are missing');
+if (!archiveHtml.includes('data-project-card')) throw new Error('Project archive cards are missing');
+for (const topic of ['ai', 'ml', 'software-dev', 'quant', 'data']) {
+  if (!archiveHtml.includes(`id="${topic}"`)) throw new Error(`Project archive topic is missing: ${topic}`);
+}
 
 const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
 const expectedIntroMode = process.env.PUBLIC_INTRO_MODE === 'design' ? 'design' : 'normal';
 if (!homeHtml.includes('data-layout="deck"') || !homeHtml.includes('data-section-deck')) throw new Error('Homepage section deck is missing');
-for (const section of ['overview', 'work', 'research', 'experience', 'about', 'contact']) {
+for (const section of ['overview', 'projects', 'research', 'experience']) {
   if (!homeHtml.includes(`id="${section}"`) || !homeHtml.includes(`data-section-link="${section}"`)) {
     throw new Error(`Homepage deck section or navigation link is missing: ${section}`);
   }
 }
-if ((homeHtml.match(/<(?:div|section)\b[^>]*\bdata-deck-panel\b/g) ?? []).length !== 6) throw new Error('Homepage must render exactly six section panels');
+if ((homeHtml.match(/<(?:div|section)\b[^>]*\bdata-deck-panel\b/g) ?? []).length !== 4) throw new Error('Homepage must render exactly four section panels');
+for (const removedSection of ['work', 'about', 'contact']) {
+  if (homeHtml.includes(`data-section-link="${removedSection}"`)) throw new Error(`Retired homepage navigation returned: ${removedSection}`);
+}
+if (!homeHtml.includes('class="overview-brief"') || !homeHtml.includes('class="overview-contact"')) throw new Error('About or contact content is missing from Overview');
+if ((homeHtml.match(/class="research-card"/g) ?? []).length !== 2 || (homeHtml.match(/class="paper-card"/g) ?? []).length !== 2) {
+  throw new Error('Research projects or paper references are missing from the homepage');
+}
+for (const cardHeading of ['project-title', 'research-card-title', 'paper-card-title']) {
+  if (!homeHtml.includes(`<h4 class="${cardHeading}"`)) throw new Error(`Homepage card heading hierarchy regressed: ${cardHeading}`);
+}
 if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-name') || !homeHtml.includes('keyboard-chassis') || !homeHtml.includes('data-typing-enter')) {
   throw new Error('Accessible hero typing station is missing');
 }

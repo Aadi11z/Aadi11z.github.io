@@ -1,16 +1,13 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Hero from '@/components/Hero.astro';
-import PositioningSection from '@/components/PositioningSection.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import ProjectCard from '@/components/ProjectCard.astro';
-import ResearchEntry from '@/components/ResearchEntry.astro';
+import ResearchCard from '@/components/ResearchCard.astro';
+import PaperCard from '@/components/PaperCard.astro';
 import ExperienceTimeline from '@/components/ExperienceTimeline.astro';
-import CapabilitiesSection from '@/components/CapabilitiesSection.astro';
-import MetricsLedger from '@/components/MetricsLedger.astro';
-import ContactSection from '@/components/ContactSection.astro';
-import { featuredProjects } from '@/data/projects';
-import { research } from '@/data/research';
+import { featuredProjectGroups } from '@/data/projects';
+import { papers, research } from '@/data/research';
 import { withBase } from '@/data/site';
 import '@/styles/home.css';
 import '@/styles/hero.css';
@@ -24,37 +21,49 @@ import '@/styles/research.css';
       <Hero />
     </div>
 
-    <section class="deck-panel section shell" id="work" data-deck-panel aria-labelledby="work-title">
-      <SectionHeading id="work-title" index="01 / Work" title="Selected work" description="Research and engineering projects across grounded AI, machine learning, quantitative systems, and data platforms." />
-      <div class="projects-grid">
-        {featuredProjects.map((project, index) => <ProjectCard project={project} index={index} />)}
+    <section class="deck-panel section shell" id="projects" data-deck-panel aria-labelledby="projects-title">
+      <SectionHeading id="projects-title" index="01 / Projects" title="Selected projects" description="A focused set of AI, machine-learning, software, quantitative, and data systems." />
+      <div class="topic-index" role="list" aria-label="Project topics">
+        {featuredProjectGroups.map((group) => <span class="topic-index-item" role="listitem">{group.category}<small>{String(group.projects.length).padStart(2, '0')}</small></span>)}
+      </div>
+      <div class="project-groups project-groups-featured">
+        {featuredProjectGroups.map((group) => (
+          <section class="project-topic" id={`project-topic-${group.category.toLowerCase().replaceAll(' ', '-')}`} aria-labelledby={`project-topic-title-${group.category.toLowerCase().replaceAll(' ', '-')}`}>
+            <header class="project-topic-header">
+              <h3 id={`project-topic-title-${group.category.toLowerCase().replaceAll(' ', '-')}`}>{group.category}</h3>
+              <span class="meta">{String(group.projects.length).padStart(2, '0')} selected</span>
+            </header>
+            <div class="project-card-grid">
+              {group.projects.map((project) => <ProjectCard project={project} index={featuredProjectGroups.flatMap((item) => item.projects).indexOf(project)} headingLevel={4} />)}
+            </div>
+          </section>
+        ))}
       </div>
       <div class="section-action"><a class="text-link" href={withBase('/projects/')}>Open the complete project archive</a></div>
     </section>
 
     <section class="deck-panel section research-section" id="research" data-deck-panel aria-labelledby="research-title">
       <div class="shell">
-        <SectionHeading id="research-title" index="02 / Research" title="Research notes" description="I’m interested in reliable machine learning, selective forgetting, robustness, and evaluation." />
-        <div class="research-list">
-          {research.map((entry, index) => <ResearchEntry entry={entry} index={index} />)}
-        </div>
+        <SectionHeading id="research-title" index="02 / Research" title="Research in practice" description="Research projects and the primary papers that inform their implementations." />
+        <section class="research-cluster" aria-labelledby="research-projects-title">
+          <div class="cluster-heading"><span class="eyebrow">Research projects</span><h3 id="research-projects-title">Experiments and evaluation</h3></div>
+          <div class="research-card-grid">
+            {research.map((entry, index) => <ResearchCard entry={entry} index={index} headingLevel={4} />)}
+          </div>
+        </section>
+        <section class="research-cluster" aria-labelledby="papers-title">
+          <div class="cluster-heading"><span class="eyebrow">Paper library</span><h3 id="papers-title">Papers behind the implementation</h3></div>
+          <div class="paper-card-grid">
+            {papers.map((paper, index) => <PaperCard paper={paper} index={index} headingLevel={4} />)}
+          </div>
+        </section>
       </div>
     </section>
 
     <section class="deck-panel section shell experience-section" id="experience" data-deck-panel aria-labelledby="experience-title">
-      <SectionHeading id="experience-title" index="03 / Experience" title="Production experience" description="Forecasting, data automation, scenario analysis, and internal machine-learning tooling for regional planning workflows." />
+      <SectionHeading id="experience-title" index="03 / Experience" title="Professional experience" description="Production-facing machine learning, forecasting, and tooling—summarized from my public LinkedIn experience note." />
       <ExperienceTimeline />
     </section>
-
-    <div class="deck-panel" id="about" data-deck-panel role="region" aria-labelledby="positioning-title">
-      <PositioningSection />
-      <CapabilitiesSection />
-      <MetricsLedger />
-    </div>
-
-    <div class="deck-panel" id="contact" data-deck-panel role="region" aria-labelledby="contact-title">
-      <ContactSection />
-    </div>
   </div>
   <script>
     import '@/scripts/section-deck';

@@ -5,13 +5,12 @@ export const experience = [
     role: 'Data Science Intern',
     location: 'Dubai, UAE',
     dates: 'July 2025 – January 2026',
-    summary: 'Worked on production forecasting, data automation, scenario analysis, and internal ML tooling for regional planning workflows.',
+    summary: 'Contributed to machine-learning forecasting workflows for large-scale medical data using Dataiku.',
     bullets: [
-      'Built and maintained production forecasting pipelines in Dataiku DSS using models including XGBoost, LightGBM, and Random Forest for the 2026–27 regional planning cycle.',
-      'Developed an authenticated API-client interface for dataset modification, model scoring, parameter updates, and business scenario testing.',
-      'Automated forecasting-dataset creation and validation, reducing workflows that previously took days to minutes.',
-      'Fixed failures in automated production pipelines caused by deprecated functions and helped preserve forecasting-dashboard data quality.',
+      'Contributed to machine-learning forecasting pipelines and learned how models are designed, automated, and managed across forecasting cycles.',
+      'Built an interface with the Dataiku API client that made models and datasets more accessible to external users.',
+      'Worked across model development, accessibility, usability, and reliability in a collaborative production environment.',
     ],
-    certifications: ['Dataiku Core Designer', 'Dataiku Advanced Designer', 'Dataiku ML Practitioner', 'Dataiku MLOps Practitioner'],
+    sourceUrl: 'https://www.linkedin.com/posts/aadi11z_this-week-i-wrapped-up-my-6-month-data-science-activity-7418371228790398976-qRW6',
   },
 ] as const;
