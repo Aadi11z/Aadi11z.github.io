@@ -148,7 +148,7 @@ for (const behavior of [
   'if (this.autoEnter) this.scheduleAutomaticEnter()',
   "document.visibilityState === 'visible'",
   "this.intro.dataset.enterMode = this.autoEnter ? 'automatic' : 'manual'",
-  'if (attemptAudio) void this.audio.unlock()',
+  'if (requestAudio) void this.audio.unlock()',
   'this.startSequence(event.isTrusted)',
   "this.phase === 'impact' || this.phase === 'transitioning'",
   "if (document.visibilityState !== 'visible' || this.phase !== 'awaiting-gesture') return",
@@ -157,6 +157,12 @@ for (const behavior of [
   'if (this.completed || signal.aborted) return',
 ]) {
   assertIncludes(introController, behavior, 'Cancellable intro controller');
+}
+const automaticStart = introController.match(/private scheduleAutomaticStart\(\): void \{[\s\S]*?\n  \}/)?.[0];
+if (!automaticStart) throw new Error('Automatic intro scheduler could not be inspected.');
+assertIncludes(automaticStart, 'this.startSequence(true)', 'Automatic audio opportunity');
+if (automaticStart.includes('this.startSequence(false)')) {
+  throw new Error('Automatic intro suppresses the browser autoplay opportunity.');
 }
 for (const behavior of [
   'shouldAutoEnterIntro',

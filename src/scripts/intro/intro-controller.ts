@@ -287,7 +287,7 @@ class KeyboardIntroRuntime {
     this.armCompletedSequence(this.getReducedMotionStatus());
   };
 
-  private startSequence(attemptAudio = false): void {
+  private startSequence(requestAudio = false): void {
     if (this.completed || this.transitionStarted) return;
     if (this.phase !== 'awaiting-gesture' && !(this.isDesignMode && this.phase === 'enter-armed')) return;
 
@@ -295,9 +295,10 @@ class KeyboardIntroRuntime {
     this.output.textContent = '';
     const controller = new AbortController();
     this.runController = controller;
-    // Visual autoplay must never make an untrusted audio request. A real
-    // pointer/key gesture can unlock sound without controlling the timeline.
-    if (attemptAudio) void this.audio.unlock();
+    // Audio initialization never blocks the visual timeline. Browsers that
+    // allow autoplay can play from the first key; a later trusted gesture can
+    // retry the same engine when autoplay is denied.
+    if (requestAudio) void this.audio.unlock();
     void this.playSequence(controller);
   }
 
@@ -539,7 +540,7 @@ class KeyboardIntroRuntime {
     this.autoStartTimer = window.setTimeout(() => {
       this.autoStartTimer = undefined;
       if (document.visibilityState !== 'visible' || this.phase !== 'awaiting-gesture') return;
-      this.startSequence(false);
+      this.startSequence(true);
     }, INTRO_TIMING.autoStartMs);
   }
 

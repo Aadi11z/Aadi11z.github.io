@@ -39,7 +39,7 @@ Normal mode records a completed or skipped intro under `aaditya-portfolio-intro-
 The intro never traps access to the portfolio and has no visible control bar:
 
 - Escape and `?intro=skip` immediately leave the scene in a valid Overview state. A focus-only skip link provides the same path for keyboard and assistive-technology users.
-- Visual typing starts without a gesture. Web Audio remains browser-compliant: the first scene click, letter-key, Enter, or sound-toggle gesture attempts to unlock sound, and the visual animation continues if sound is blocked, unavailable, or still decoding. A completely automatic phone/tablet run may therefore be silent until the visitor interacts.
+- Visual typing and a non-blocking Web Audio initialization attempt both start automatically. Browsers that allow audible autoplay can play clicks from the first key. If autoplay is denied, the animation continues silently and the first scene click, letter-key, Enter, or sound-toggle gesture retries audio without restarting the sequence.
 - A compact corner speaker icon toggles sound without gating the animation and preserves the visitor's preference in `localStorage`.
 - Development fetches keyboard audio with `no-store`, so regenerated samples cannot be replaced by stale localhost cache entries. Production keeps long-lived caching because every emitted audio URL is content-hashed.
 - With `prefers-reduced-motion: reduce`, the final name is shown immediately, key/glow movement is minimized, and the visitor can press Enter or skip without watching the typing sequence.
@@ -117,7 +117,7 @@ Explorer observations require an explicit provenance value. Missing experiment r
 - `src/scripts/intro/keyboard-controller.ts` — independently addressable physical/script/debug key mechanics, neighbor spill, and cleanup
 - `src/scripts/intro/intro-controller.ts` — cancellable intro state machine, text synchronization, session handling, reduced motion, skip behavior, and transition completion
 - `src/scripts/intro/device-policy.ts` — snapshot of pointer/hover capability deciding whether final Enter waits for input or continues automatically
-- `src/scripts/intro/audio-engine.ts` — gesture-gated Web Audio decoding, four normal-key variations, distinct Space/Enter playback, voice limiting, persisted mute preference, and environment-aware asset caching
+- `src/scripts/intro/audio-engine.ts` — opportunistic, retryable Web Audio decoding, four normal-key variations, distinct Space/Enter playback, voice limiting, persisted mute preference, and environment-aware asset caching
 - `src/styles/keyboard-intro.css` — CSS 3D chassis and keycaps, static ambient gradients, local RGB pulses, responsive scaling, and reduced-motion states
 - `src/assets/audio/keyboard/` — six compact adapted keyboard samples and detailed source, license, checksum, and cut provenance
 - `src/components/visuals/` — original project SVG illustrations
