@@ -9,12 +9,13 @@
   "scripts": {
     "dev": "astro dev",
     "dev:design": "PUBLIC_INTRO_MODE=design astro dev",
+    "generate:keyboard-audio": "node scripts/generate-keyboard-audio.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
     "lint": "astro check",
     "typecheck": "astro check",
-    "test": "node scripts/test-content.mjs",
+    "test": "node scripts/test-content.mjs && node scripts/test-intro-model.mjs && node scripts/test-audio-resume.mjs",
     "generated-check": "node scripts/test-generated.mjs",
     "budget-check": "node scripts/check-budgets.mjs",
     "validate": "npm run test && npm run check && npm run build && npm run generated-check && npm run budget-check"

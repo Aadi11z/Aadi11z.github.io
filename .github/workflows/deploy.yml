@@ -34,17 +34,45 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://aadi11z.github.io
           PUBLIC_BASE_PATH: ''
+          PUBLIC_INTRO_MODE: normal
       - name: Verify generated output
         run: npm run generated-check && npm run budget-check
         env:
           PUBLIC_SITE_URL: https://aadi11z.github.io
           PUBLIC_BASE_PATH: ''
+          PUBLIC_INTRO_MODE: normal
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+  verify-base-path:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Content and type checks
+        run: npm run test && npm run check
+      - name: Build project-site base path
+        run: npm run build
+        env:
+          PUBLIC_SITE_URL: https://aadi11z.github.io
+          PUBLIC_BASE_PATH: website
+          PUBLIC_INTRO_MODE: normal
+      - name: Verify project-site output
+        run: npm run generated-check && npm run budget-check
+        env:
+          PUBLIC_SITE_URL: https://aadi11z.github.io
+          PUBLIC_BASE_PATH: website
+          PUBLIC_INTRO_MODE: normal
   deploy:
-    needs: build
+    needs: [build, verify-base-path]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

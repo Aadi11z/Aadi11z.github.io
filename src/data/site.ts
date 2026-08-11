@@ -1,6 +1,6 @@
 const defaultSiteUrl = 'https://aadi11z.github.io';
 
-export const introSessionKey = 'aaditya-portfolio-intro-v1';
+export const introSessionKey = 'aaditya-portfolio-intro-v2';
 export type IntroMode = 'normal' | 'design';
 
 const requestedIntroMode = import.meta.env.PUBLIC_INTRO_MODE;

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 const dist = 'dist';
 const base = (process.env.PUBLIC_BASE_PATH ?? '').replace(/^\/+|\/+$/g, '');
@@ -107,12 +107,60 @@ if ((homeHtml.match(/class="research-card"/g) ?? []).length !== 2 || (homeHtml.m
 for (const cardHeading of ['project-title', 'research-card-title', 'paper-card-title']) {
   if (!homeHtml.includes(`<h4 class="${cardHeading}"`)) throw new Error(`Homepage card heading hierarchy regressed: ${cardHeading}`);
 }
-if (!homeHtml.includes('data-typing-station') || !homeHtml.includes('data-typed-name') || !homeHtml.includes('keyboard-chassis') || !homeHtml.includes('data-typing-enter')) {
-  throw new Error('Accessible hero typing station is missing');
+if (!homeHtml.includes('data-keyboard-intro') || !homeHtml.includes('data-typed-name') || !homeHtml.includes('data-keyboard') || !homeHtml.includes('data-intro-status')) {
+  throw new Error('Accessible native keyboard intro is missing');
 }
 if (!homeHtml.includes('data-hero-gate') || !homeHtml.includes('data-overview-content')) throw new Error('Hero intro gate or Overview fallback is missing');
-if (!homeHtml.includes('data-intro-session-key="aaditya-portfolio-intro-v1"') || !homeHtml.includes(`data-intro-mode="${expectedIntroMode}"`) || !homeHtml.includes("dataset.introVisit")) {
+if (!homeHtml.includes('data-intro-session-key="aaditya-portfolio-intro-v2"') || !homeHtml.includes(`data-intro-mode="${expectedIntroMode}"`) || !homeHtml.includes("dataset.introVisit")) {
   throw new Error('Generated homepage is missing first-visit intro initialization.');
+}
+
+const introMarkup = homeHtml.match(/<section\b[^>]*\bdata-keyboard-intro\b[\s\S]*?<\/section>/)?.[0];
+if (!introMarkup) throw new Error('Unable to isolate the generated keyboard intro markup.');
+if (!introMarkup.includes('Starting automatically')) throw new Error('Generated keyboard intro is missing automatic-start copy.');
+const introOpeningTags = introMarkup.match(/<(?!\/|!)[a-z][\w-]*\b[^>]*>/gi) ?? [];
+if (introOpeningTags.length >= 100) throw new Error(`Keyboard intro DOM budget exceeded: ${introOpeningTags.length} opening tags`);
+const introSkipTags = introMarkup.match(/<a\b[^>]*\bdata-intro-skip\b[^>]*>/g) ?? [];
+if (introSkipTags.length !== 1) {
+  throw new Error('Keyboard intro must contain exactly one focus-only skip fallback.');
+}
+const expectedIntroSkip = `${basePrefix}/?intro=skip#overview`;
+if (!introSkipTags[0].includes('class="intro-accessible-skip"') || !introSkipTags[0].includes(`href="${expectedIntroSkip}"`)) {
+  throw new Error('Keyboard intro skip fallback does not respect the active base path.');
+}
+const introButtons = introMarkup.match(/<button\b[^>]*>/g) ?? [];
+if (
+  introButtons.length !== 1
+  || !introButtons[0].includes('class="intro-sound-toggle"')
+  || !introButtons[0].includes('data-sound-toggle')
+  || !introButtons[0].includes('aria-label="Keyboard sound"')
+  || !introButtons[0].includes('aria-pressed="true"')
+) {
+  throw new Error('Keyboard intro must contain only the compact sound toggle button.');
+}
+for (const retiredControl of ['data-intro-start', 'data-intro-controls', 'class="intro-control']) {
+  if (introMarkup.includes(retiredControl)) throw new Error(`Visible intro control returned: ${retiredControl}`);
+}
+
+const introScriptSrc = homeHtml.match(/<script\b[^>]*src="([^"]*KeyboardIntro[^"]*\.js)"/)?.[1];
+if (!introScriptSrc) throw new Error('Unable to locate the generated keyboard intro script.');
+const introScriptPath = introScriptSrc.slice(basePrefix.length).replace(/^\//, '');
+const introScript = readFileSync(join(dist, introScriptPath), 'utf8');
+if (!introScript.includes('force-cache') || introScript.includes('no-store')) {
+  throw new Error('Production keyboard audio must use the content-hashed force-cache branch only.');
+}
+
+const keyTags = introMarkup.match(/<span\b[^>]*\bclass="kb-key"[^>]*>/g) ?? [];
+if (keyTags.length !== 67) throw new Error(`Expected 67 generated physical keys, found ${keyTags.length}`);
+const generatedKeyCodes = keyTags.map((tag) => tag.match(/\bdata-key="([^"]+)"/)?.[1]).filter(Boolean);
+if (generatedKeyCodes.length !== 67 || new Set(generatedKeyCodes).size !== 67) {
+  throw new Error('Generated keyboard keys must expose 67 unique data-key values.');
+}
+for (const requiredCode of ['ShiftLeft', 'KeyA', 'KeyB', 'Space', 'Enter']) {
+  if (!generatedKeyCodes.includes(requiredCode)) throw new Error(`Generated keyboard is missing ${requiredCode}.`);
+}
+if (introMarkup.includes('<canvas') || /\b(?:webgl|three\.js)\b/i.test(introMarkup)) {
+  throw new Error('Generated keyboard intro contains a prohibited rendering runtime.');
 }
 
 for (const explorerPage of ['lab/index.html', 'projects/machine-unlearning-vision-language-models/index.html']) {
@@ -132,4 +180,24 @@ if (!robots.includes(expectedSitemap)) throw new Error(`Robots sitemap mismatch:
 const sitemap = readFileSync(join(dist, 'sitemap-0.xml'), 'utf8');
 if (!sitemap.includes(`${basePrefix}/lab/`)) throw new Error('Lab route is missing from the sitemap');
 
-console.log(`Generated-output checks passed: ${htmlFiles.length} HTML pages and ${internalLinks.length} internal references verified.`);
+/** @type {string[]} */
+const keyboardAudioFiles = [];
+/** @type {string[]} */
+const sourceRecordingFiles = [];
+/** @param {string} directory */
+function collectKeyboardAudio(directory) {
+  for (const entry of readdirSync(directory)) {
+    const file = join(directory, entry);
+    if (statSync(file).isDirectory()) collectKeyboardAudio(file);
+    else if (/^(?:key-0[1-4]|space|enter)\.[^.]+\.webm$/.test(basename(file))) keyboardAudioFiles.push(file);
+    else if (/keyboard[^/]*\.mp3$/i.test(basename(file))) sourceRecordingFiles.push(file);
+  }
+}
+collectKeyboardAudio(dist);
+if (keyboardAudioFiles.length !== 6) {
+  throw new Error(`Expected six emitted keyboard WebM assets, found ${keyboardAudioFiles.length}. Audio must not be inlined.`);
+}
+if (keyboardAudioFiles.some((file) => statSync(file).size === 0)) throw new Error('An emitted keyboard audio asset is empty.');
+if (sourceRecordingFiles.length) throw new Error(`Full keyboard source recording was deployed: ${sourceRecordingFiles.join(', ')}`);
+
+console.log(`Generated-output checks passed: ${htmlFiles.length} HTML pages, ${internalLinks.length} internal references, ${keyTags.length} keys in ${introOpeningTags.length} intro nodes, and ${keyboardAudioFiles.length} audio assets verified.`);

@@ -1,0 +1,66 @@
+---
+import { profile } from '@/data/profile';
+import { withBase } from '@/data/site';
+import KeyboardScene from './KeyboardScene.astro';
+import '@/styles/keyboard-intro.css';
+
+const fallbackUrl = `${withBase('/')}?intro=skip#overview`;
+---
+
+<section
+  class="keyboard-intro"
+  data-keyboard-intro
+  data-name={profile.name}
+  data-phase="ssr"
+  aria-describedby="keyboard-intro-description"
+>
+  <p id="keyboard-intro-description" class="visually-hidden">
+    A decorative mechanical keyboard automatically types {profile.name}. On laptops, click the scene or press Enter after typing. Phones and tablets continue automatically. Press Escape at any time to open the portfolio.
+  </p>
+
+  <a class="intro-accessible-skip" href={fallbackUrl} data-intro-skip>Skip keyboard intro</a>
+
+  <button
+    class="intro-sound-toggle"
+    type="button"
+    aria-label="Keyboard sound"
+    aria-pressed="true"
+    title="Mute keyboard sound"
+    data-sound-toggle
+  >
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+      <path class="intro-sound-speaker" d="M4 9v6h4l5 4V5L8 9H4Z"></path>
+      <path class="intro-sound-wave" d="M16 8.3a5 5 0 0 1 0 7.4M18.5 5.8a8.5 8.5 0 0 1 0 12.4"></path>
+      <path class="intro-sound-muted" d="m16.5 9 4 6m0-6-4 6"></path>
+    </svg>
+  </button>
+
+  <div class="intro-ambient" aria-hidden="true"></div>
+
+  <header class="intro-nameplate">
+    <p class="intro-kicker">Portfolio Website</p>
+    <div class="intro-typed-title" aria-hidden="true" data-intro-title>
+      <span data-typed-name>{profile.name}</span>
+      <span class="intro-cursor"></span>
+    </div>
+  </header>
+
+  <KeyboardScene />
+
+  <div class="intro-footer">
+    <p class="intro-prompt" data-intro-prompt>
+      <span aria-hidden="true">↳</span>
+      <span data-intro-prompt-text>Starting automatically</span>
+      <span class="intro-prompt-hint">Esc to skip</span>
+    </p>
+  </div>
+
+  <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-intro-status>
+    Keyboard intro starting automatically. Press Escape to skip to the portfolio.
+  </p>
+</section>
+
+<script>
+  import { mountKeyboardIntros } from '@/scripts/intro/intro-controller';
+  mountKeyboardIntros();
+</script>

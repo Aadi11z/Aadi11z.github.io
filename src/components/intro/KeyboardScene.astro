@@ -1,0 +1,40 @@
+---
+import { KEYBOARD_BOUNDS, KEYBOARD_LAYOUT } from '@/data/keyboard-layout';
+import '@/styles/keyboard-intro.css';
+
+const precision = (value: number) => Number(value.toFixed(4));
+const chassisStyle = `--kb-chassis-ratio: ${KEYBOARD_BOUNDS.chassisWidth} / ${KEYBOARD_BOUNDS.chassisHeight}`;
+const keyStyle = (key: (typeof KEYBOARD_LAYOUT)[number]) => [
+  `--kb-x: ${precision(key.xPercent)}%`,
+  `--kb-y: ${precision(key.yPercent)}%`,
+  `--kb-w: ${precision(key.widthPercent)}%`,
+  `--kb-h: ${precision(key.heightPercent)}%`,
+  `--kb-hue: ${key.hue}`,
+].join('; ');
+---
+
+<div class="kb-scene" data-keyboard-scene aria-hidden="true">
+  <div
+    class="kb-keyboard"
+    data-keyboard
+    data-key-count={KEYBOARD_BOUNDS.keyCount}
+    data-row-count={KEYBOARD_BOUNDS.rowCount}
+    style={chassisStyle}
+  >
+    <div class="kb-deck">
+      {KEYBOARD_LAYOUT.map((key) => (
+        <span
+          class="kb-key"
+          data-key={key.code}
+          data-kind={key.kind}
+          data-legend={key.legend}
+          data-shift={key.shiftLegend}
+          data-row={key.row}
+          data-column={key.column}
+          data-neighbors={key.neighbors.join(' ')}
+          style={keyStyle(key)}
+        ></span>
+      ))}
+    </div>
+  </div>
+</div>

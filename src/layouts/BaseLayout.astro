@@ -67,6 +67,7 @@ const personSchema = {
     <meta name="twitter:image" content={imageUrl} />
     <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
     <link rel="manifest" href={withBase('/manifest.webmanifest')} />
+    <noscript><style>.hero-intro { display: none !important; }</style></noscript>
     <script is:inline type="application/ld+json" set:html={JSON.stringify(personSchema)} />
     <script is:inline>
       (() => {
@@ -84,13 +85,23 @@ const personSchema = {
           ? savedTheme
           : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         const requestedSection = decodeURIComponent(window.location.hash.slice(1));
-        const skipIntro = root.dataset.introMode !== 'design' && requestedSection && requestedSection !== 'overview';
+        const currentUrl = new URL(window.location.href);
+        const explicitSkip = currentUrl.searchParams.get('intro') === 'skip';
+        const skipIntro = root.dataset.introMode !== 'design' && (explicitSkip || (requestedSection && requestedSection !== 'overview'));
         root.dataset.theme = theme;
         root.dataset.introVisit = root.dataset.introMode === 'design'
           ? 'first'
           : (introSeen || skipIntro ? 'returning' : 'first');
         root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered';
         document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#05080e' : '#efe8d1');
+        if (explicitSkip) {
+          try {
+            const introKey = root.dataset.introSessionKey;
+            if (root.dataset.introMode !== 'design' && introKey) sessionStorage.setItem(introKey, 'seen');
+          } catch { /* Storage may be disabled. */ }
+          currentUrl.searchParams.delete('intro');
+          window.history.replaceState(null, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+        }
       })();
     </script>
   </head>

@@ -10,3 +10,4 @@ graphify-out/
 !.env.example
 .vscode/
 Aaditya_Bhatnagar_CV.pdf
+src/assets/audio/keyboard/*.mp3

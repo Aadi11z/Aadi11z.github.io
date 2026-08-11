@@ -11,10 +11,13 @@
     document.querySelector('[data-theme-color]')?.setAttribute('content', dark ? '#05080e' : '#efe8d1');
   };
   buttons.forEach((button) => button.addEventListener('click', () => {
-    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next;
+    const root = document.documentElement;
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.themeSwitching = 'true';
+    root.dataset.theme = next;
     try { localStorage.setItem('theme', next); } catch { /* Storage may be disabled. */ }
     updateLabel();
+    requestAnimationFrame(() => requestAnimationFrame(() => delete root.dataset.themeSwitching));
   }));
   updateLabel();
 </script>
