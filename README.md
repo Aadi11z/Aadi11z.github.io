@@ -29,18 +29,19 @@ npm run dev
 npm run dev:design
 ```
 
-- `npm run dev` is the normal visitor flow. The intro waits for a click or letter-key gesture, wakes the RGB scene, types the name from one deterministic keystroke sequence, and automatically presses Enter after a short pause. The name then transitions into the real Overview heading.
-- `npm run dev:design` is the animation-debug flow. It ignores visit persistence, runs the same keyboard sequence, and holds on the completed keyboard. Enter previews its impact without opening Overview, so key travel and lighting can be inspected repeatedly.
+- `npm run dev` is the normal visitor flow. The RGB keyboard and deterministic name-typing sequence start automatically on a first visit in each tab. Laptop-style fine/hover input waits at the completed name for a scene click or physical Enter. Touch-first phone/tablet input presses Enter automatically after the authored pause and transitions into the real Overview heading.
+- `npm run dev:design` is the animation-debug flow. It ignores visit persistence, starts the same typing sequence automatically, and holds on the completed keyboard. Enter previews its impact without opening Overview, so key travel and lighting can be inspected repeatedly.
 
 `npm run build` always defaults to normal production mode. Restart the development server when switching modes.
 
-Normal mode records a completed or skipped intro under `aaditya-portfolio-intro-v2` in browser `sessionStorage`. It stays skipped through navigation and refreshes in the same browsing session, then becomes eligible again in a new browser session. The pre-paint gate reads that value before rendering, so returning visitors do not see a flash of the intro. Design mode ignores and does not update the session value.
+Normal mode records a completed or skipped intro under `aaditya-portfolio-intro-v2` in browser `sessionStorage`. This makes playback specific to the tab's session context: navigation and refreshes in that tab skip it, while an independently opened tab starts a new lifecycle. Browsers may clone session storage into duplicated tabs or tabs opened with an opener. The pre-paint gate reads the value before rendering, so returning visitors do not see a flash of the intro. Design mode ignores and does not update the session value.
 
-The intro never traps access to the portfolio:
+The intro never traps access to the portfolio and has no visible control bar:
 
-- `Skip intro`, Escape, and `?intro=skip` immediately leave the scene in a valid Overview state.
-- The first Begin, letter-key, or Enter gesture attempts to unlock Web Audio. Animation continues silently if sound is blocked, unavailable, or still decoding.
-- `Sound on / off` persists separately in `localStorage`; muting does not affect animation timing.
+- Escape and `?intro=skip` immediately leave the scene in a valid Overview state. A focus-only skip link provides the same path for keyboard and assistive-technology users.
+- Visual typing starts without a gesture. Web Audio remains browser-compliant: the first scene click, letter-key, Enter, or sound-toggle gesture attempts to unlock sound, and the visual animation continues if sound is blocked, unavailable, or still decoding. A completely automatic phone/tablet run may therefore be silent until the visitor interacts.
+- A compact corner speaker icon toggles sound without gating the animation and preserves the visitor's preference in `localStorage`.
+- Development fetches keyboard audio with `no-store`, so regenerated samples cannot be replaced by stale localhost cache entries. Production keeps long-lived caching because every emitted audio URL is content-hashed.
 - With `prefers-reduced-motion: reduce`, the final name is shown immediately, key/glow movement is minimized, and the visitor can press Enter or skip without watching the typing sequence.
 - Native View Transitions morph the typed name toward the Overview title when supported. The CSS fallback preserves the same valid final state without a client router.
 
@@ -73,13 +74,18 @@ npm audit --omit=dev --audit-level=moderate
 
 `npm run validate` runs content checks, Astro diagnostics, a production build, generated-output checks, and performance-budget checks.
 
-Keyboard audio is generated from deterministic, repository-owned synthesis code:
+Keyboard audio is extracted deterministically from a locally supplied, checksum-verified
+mechanical-keyboard recording:
 
 ```bash
 npm run generate:keyboard-audio
 ```
 
-This command requires `ffmpeg` with the `libopus` encoder. It recreates four normal-key variants plus distinct Space and Enter samples as mono 48 kHz WebM/Opus assets. Source and licensing details live in `src/assets/audio/keyboard/PROVENANCE.md`; no third-party recordings are used.
+This command requires `ffmpeg` with the `libopus` encoder and the ignored local source
+file documented in `src/assets/audio/keyboard/PROVENANCE.md`. It recreates four
+normal-key variants plus distinct Space and Enter samples as mono 48 kHz WebM/Opus
+assets. Only the compact, interface-integrated derivatives are built and deployed; the
+full source MP3 is never committed or emitted.
 
 To test a GitHub project-site base path:
 
@@ -104,16 +110,16 @@ Explorer observations require an explicit provenance value. Missing experiment r
 
 ## Presentation architecture
 
-- `src/components/intro/KeyboardIntro.astro` — accessible intro shell, typed name, live status, and scene composition
+- `src/components/intro/KeyboardIntro.astro` — accessible intro shell, full-scene gesture prompt, focus-only skip fallback, typed name, live status, and scene composition
 - `src/components/intro/KeyboardScene.astro` — one decorative DOM key per physical key, generated from layout data rather than hand-authored markup
-- `src/components/intro/IntroControls.astro` — Begin, persistent sound preference, and skip controls with non-JavaScript fallback URLs
 - `src/data/keyboard-layout.ts` — typed compact-keyboard geometry, realistic key widths, RGB hue placement, and physical-neighbor metadata
 - `src/data/intro-sequence.ts` — the single causal typing timeline for Shift chords, letters, Space, holds, gaps, and final Enter timing
 - `src/scripts/intro/keyboard-controller.ts` — independently addressable physical/script/debug key mechanics, neighbor spill, and cleanup
 - `src/scripts/intro/intro-controller.ts` — cancellable intro state machine, text synchronization, session handling, reduced motion, skip behavior, and transition completion
-- `src/scripts/intro/audio-engine.ts` — gesture-gated Web Audio decoding, four normal-key variations, distinct Space/Enter playback, voice limiting, and mute persistence
+- `src/scripts/intro/device-policy.ts` — snapshot of pointer/hover capability deciding whether final Enter waits for input or continues automatically
+- `src/scripts/intro/audio-engine.ts` — gesture-gated Web Audio decoding, four normal-key variations, distinct Space/Enter playback, voice limiting, persisted mute preference, and environment-aware asset caching
 - `src/styles/keyboard-intro.css` — CSS 3D chassis and keycaps, static ambient gradients, local RGB pulses, responsive scaling, and reduced-motion states
-- `src/assets/audio/keyboard/` — six original compressed keyboard samples and their provenance
+- `src/assets/audio/keyboard/` — six compact adapted keyboard samples and detailed source, license, checksum, and cut provenance
 - `src/components/visuals/` — original project SVG illustrations
 - `src/components/playgrounds/` — progressively enhanced static explorers
 - `src/styles/tokens.css` — cream/light and black-blue/dark theme tokens, spacing, and type

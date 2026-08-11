@@ -30,6 +30,7 @@ export type IntroSequenceStep = Readonly<{
 }>;
 
 export const INTRO_TIMING = Object.freeze({
+  autoStartMs: 80,
   bottomOutMs: 18,
   shiftLeadMs: 14,
   lightingMs: 260,

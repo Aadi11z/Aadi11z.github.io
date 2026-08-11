@@ -66,8 +66,7 @@ if (homepageGzip > HOMEPAGE_GZIP_BUDGET) {
 const introJsFiles = jsFiles.filter((file) => {
   const source = readFileSync(file, 'utf8');
   return source.includes('data-keyboard-intro')
-    || source.includes('__keyboardIntroDebug')
-    || source.includes('portfolio-intro-sound-v1');
+    || source.includes('__keyboardIntroDebug');
 });
 const introJsGzip = introJsFiles.reduce((total, file) => total + gzipSize(file), 0);
 if (introJsFiles.length && introJsGzip > INTRO_JS_GZIP_BUDGET) {

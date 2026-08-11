@@ -13,9 +13,10 @@ const requiredFiles = [
   'src/components/PaperCard.astro',
   'src/components/intro/KeyboardIntro.astro',
   'src/components/intro/KeyboardScene.astro',
-  'src/components/intro/IntroControls.astro',
   'src/scripts/intro/intro-controller.ts',
+  'src/scripts/intro/device-policy.ts',
   'src/scripts/intro/keyboard-controller.ts',
+  'src/scripts/intro/audio-context.ts',
   'src/scripts/intro/audio-engine.ts',
   'src/styles/keyboard-intro.css',
   'src/styles/hero.css',
@@ -48,6 +49,7 @@ for (const file of requiredFiles) {
 for (const retiredFile of [
   'src/components/visuals/HeroVisual.astro',
   'src/components/visuals/MechanicalKeyboard.astro',
+  'src/components/intro/IntroControls.astro',
 ]) {
   if (existsSync(retiredFile)) throw new Error(`Retired keyboard implementation returned: ${retiredFile}`);
 }
@@ -64,11 +66,14 @@ const introSequence = read('src/data/intro-sequence.ts');
 const sectionDeck = read('src/scripts/section-deck.ts');
 const keyboardIntro = read('src/components/intro/KeyboardIntro.astro');
 const keyboardScene = read('src/components/intro/KeyboardScene.astro');
-const introControls = read('src/components/intro/IntroControls.astro');
 const introController = read('src/scripts/intro/intro-controller.ts');
+const devicePolicy = read('src/scripts/intro/device-policy.ts');
 const keyboardController = read('src/scripts/intro/keyboard-controller.ts');
+const audioContext = read('src/scripts/intro/audio-context.ts');
 const audioEngine = read('src/scripts/intro/audio-engine.ts');
+const audioGenerator = read('scripts/generate-keyboard-audio.mjs');
 const keyboardStyles = read('src/styles/keyboard-intro.css');
+const gitignore = read('.gitignore');
 const baseLayout = read('src/layouts/BaseLayout.astro');
 const homeStyles = read('src/styles/home.css');
 const indexPage = read('src/pages/index.astro');
@@ -111,11 +116,15 @@ for (const mapping of ["['work', 'projects']", "['about', 'overview']", "['conta
 assertIncludes(keyboardIntro, 'data-keyboard-intro', 'Keyboard intro root');
 assertIncludes(keyboardIntro, 'data-typed-name', 'Synchronized typed-name output');
 assertIncludes(keyboardIntro, 'aria-live="polite"', 'Keyboard intro status');
+assertIncludes(keyboardIntro, 'Starting automatically', 'Automatic intro copy');
 assertIncludes(keyboardScene, 'KEYBOARD_LAYOUT.map((key)', 'Data-driven keyboard rendering');
 assertIncludes(keyboardScene, 'data-key={key.code}', 'Individually addressable keys');
 assertIncludes(keyboardScene, 'aria-hidden="true"', 'Decorative keyboard accessibility');
-for (const control of ['data-intro-start', 'data-sound-toggle', 'data-intro-skip', '?intro=skip']) {
-  assertIncludes(introControls, control, 'Intro controls');
+for (const control of ['data-intro-skip', '?intro=skip', 'data-intro-prompt', 'data-sound-toggle']) {
+  assertIncludes(keyboardIntro, control, 'Keyboard intro fallback controls');
+}
+for (const retiredControl of ['data-intro-start', 'data-intro-controls']) {
+  if (keyboardIntro.includes(retiredControl)) throw new Error(`Visible intro control returned: ${retiredControl}`);
 }
 
 for (const behavior of [
@@ -125,14 +134,36 @@ for (const behavior of [
   "event.key === 'Escape'",
   "addEventListener('visibilitychange'",
   "addEventListener('pagehide'",
+  "this.intro.addEventListener('pointerdown', this.handleIntroPointerDown, options)",
   'startViewTransition',
   'isInteractiveTarget',
   'unlockThenPressEnter',
   "sessionStorage.setItem(this.sessionKey, 'seen')",
   "this.keyboard.releaseAll('script')",
   'skip(focusHeading',
+  "'awaiting-gesture': 'Starting automatically'",
+  "'enter-armed': 'Click anywhere or press Enter'",
+  "this.soundToggle?.addEventListener('click', this.handleSoundClick, options)",
+  'this.scheduleAutomaticStart()',
+  'if (this.autoEnter) this.scheduleAutomaticEnter()',
+  "document.visibilityState === 'visible'",
+  "this.intro.dataset.enterMode = this.autoEnter ? 'automatic' : 'manual'",
+  'if (attemptAudio) void this.audio.unlock()',
+  'this.startSequence(event.isTrusted)',
+  "this.phase === 'impact' || this.phase === 'transitioning'",
+  "if (document.visibilityState !== 'visible' || this.phase !== 'awaiting-gesture') return",
+  "if (document.visibilityState !== 'visible' || this.phase !== 'enter-armed') return",
+  'if (signal.aborted) return',
+  'if (this.completed || signal.aborted) return',
 ]) {
   assertIncludes(introController, behavior, 'Cancellable intro controller');
+}
+for (const behavior of [
+  'shouldAutoEnterIntro',
+  'coarsePrimaryPointer',
+  'anyHoverAvailable',
+]) {
+  assertIncludes(devicePolicy, behavior, 'Touch-device Enter policy');
 }
 for (const phase of ['awaiting-gesture', 'lighting', 'typing', 'settling', 'enter-armed', 'impact', 'transitioning', 'entered']) {
   assertIncludes(introController, `'${phase}'`, 'Intro phase state machine');
@@ -146,17 +177,24 @@ for (const asset of ['key01Url', 'key02Url', 'key03Url', 'key04Url', 'spaceUrl',
 }
 for (const behavior of [
   'window.AudioContext',
-  'context.resume()',
-  "fetch(url, { cache: 'force-cache', signal:",
+  "import.meta.env.DEV ? 'no-store' : 'force-cache'",
+  'fetch(url, { cache: audioCacheMode, signal:',
   'loadController.abort()',
   'Promise.allSettled',
   'playbackRate.value',
   'const maxVoices = 6',
+  'const resumeTimeoutMs = 250',
+  "if (context?.state === 'running' && buffers.size > 0) return true",
+  'resumeAudioContext(activeContext, resumeTimeoutMs)',
+  'if (unlockPromise === attempt) unlockPromise = undefined',
   "localStorage.getItem(soundPreferenceKey) === 'muted'",
   'localStorage.setItem(soundPreferenceKey',
   'toggleMuted',
 ]) {
   assertIncludes(audioEngine, behavior, 'Gesture-gated Web Audio engine');
+}
+for (const behavior of ['context.resume()', 'Promise.race', "context.state === 'running'"]) {
+  assertIncludes(audioContext, behavior, 'Retryable audio-context resume');
 }
 if (!/normal:\s*\[key01Url, key02Url, key03Url, key04Url\]/.test(audioEngine)) {
   throw new Error('Normal-key audio must use four variations.');
@@ -164,6 +202,15 @@ if (!/normal:\s*\[key01Url, key02Url, key03Url, key04Url\]/.test(audioEngine)) {
 if (!/space:\s*\[spaceUrl\]/.test(audioEngine) || !/enter:\s*\[enterUrl\]/.test(audioEngine)) {
   throw new Error('Space and Enter must use distinct audio samples.');
 }
+for (const extractionRule of [
+  'expectedSourceSha256',
+  'atrim=start=',
+  "'-application', 'audio'",
+  "pitchRate: 44_000",
+]) {
+  assertIncludes(audioGenerator, extractionRule, 'Deterministic keyboard audio extraction');
+}
+assertIncludes(gitignore, 'src/assets/audio/keyboard/*.mp3', 'Full keyboard recording exclusion');
 
 for (const rendering of [
   'perspective:',
@@ -171,11 +218,19 @@ for (const rendering of [
   '[data-pressed',
   '--kb-hue',
   'prefers-reduced-motion: reduce',
+  "[data-keyboard-intro][data-phase='enter-armed']",
+  '.intro-sound-toggle[aria-pressed=',
 ]) {
   assertIncludes(keyboardStyles, rendering, 'Keyboard rendering strategy');
 }
+for (const tilt of ['--kb-tilt: 17deg', '--kb-tilt: 16deg', '--kb-tilt: 15deg']) {
+  assertIncludes(keyboardStyles, tilt, 'Shallow keyboard perspective');
+}
+if (/--kb-tilt:\s*(?:39|41|44)deg/.test(keyboardStyles)) {
+  throw new Error('Excessive keyboard foreshortening returned.');
+}
 
-const introSource = [keyboardIntro, keyboardScene, introControls, introController, keyboardController, audioEngine, keyboardStyles, keyboardLayout, introSequence].join('\n');
+const introSource = [keyboardIntro, keyboardScene, introController, devicePolicy, keyboardController, audioEngine, keyboardStyles, keyboardLayout, introSequence].join('\n');
 /** @type {Array<[RegExp, string]>} */
 const prohibitedRuntimePatterns = [
   [/<canvas\b/i, 'Canvas'],
@@ -198,6 +253,7 @@ if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js
 }
 assertIncludes(baseLayout, "root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered'", 'Pre-paint hero intro state');
 assertIncludes(baseLayout, "sessionStorage.getItem(introKey) === 'seen'", 'Per-tab first-visit initialization');
+assertIncludes(baseLayout, "if (root.dataset.introMode !== 'design' && introKey) sessionStorage.setItem(introKey, 'seen')", 'Explicit intro-skip persistence');
 assertIncludes(baseLayout, "introSeen || skipIntro ? 'returning' : 'first'", 'Per-tab first-visit decision');
 assertIncludes(site, "introSessionKey = 'aaditya-portfolio-intro-v2'", 'Versioned intro session key');
 

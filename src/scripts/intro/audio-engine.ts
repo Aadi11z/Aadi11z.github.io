@@ -4,6 +4,7 @@ import key03Url from '@/assets/audio/keyboard/key-03.webm?url&no-inline';
 import key04Url from '@/assets/audio/keyboard/key-04.webm?url&no-inline';
 import spaceUrl from '@/assets/audio/keyboard/space.webm?url&no-inline';
 import enterUrl from '@/assets/audio/keyboard/enter.webm?url&no-inline';
+import { resumeAudioContext } from './audio-context';
 
 export type IntroSoundKind = 'normal' | 'space' | 'enter';
 
@@ -21,8 +22,11 @@ const soundUrls: Record<IntroSoundKind, readonly string[]> = {
   enter: [enterUrl],
 };
 
-const soundPreferenceKey = 'portfolio-intro-sound-v1';
 const maxVoices = 6;
+const masterLevel = .42;
+const resumeTimeoutMs = 250;
+const soundPreferenceKey = 'portfolio-intro-sound-v1';
+const audioCacheMode: RequestCache = import.meta.env.DEV ? 'no-store' : 'force-cache';
 
 function readMutedPreference(): boolean {
   try {
@@ -50,39 +54,58 @@ export function createIntroAudioEngine(): IntroAudioEngine {
   };
 
   const load = async (audioContext: AudioContext, url: string): Promise<AudioBuffer> => {
-    const response = await fetch(url, { cache: 'force-cache', signal: loadController.signal });
+    const response = await fetch(url, { cache: audioCacheMode, signal: loadController.signal });
     if (!response.ok) throw new Error(`Keyboard audio request failed: ${response.status}`);
     return audioContext.decodeAudioData(await response.arrayBuffer());
   };
 
   const unlock = async (): Promise<boolean> => {
     if (destroyed || mutedState) return false;
+    if (context?.state === 'running' && buffers.size > 0) return true;
     if (unlockPromise) return unlockPromise;
 
-    unlockPromise = (async () => {
+    const attempt = (async () => {
       try {
         const AudioContextConstructor = window.AudioContext
           ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextConstructor) return false;
-        context = new AudioContextConstructor({ latencyHint: 'interactive' });
-        masterGain = context.createGain();
-        masterGain.gain.value = .28;
-        masterGain.connect(context.destination);
-        await context.resume();
-        if (destroyed) return false;
+        if (!context || context.state === 'closed') {
+          buffers.clear();
+          masterGain?.disconnect();
+          context = new AudioContextConstructor({ latencyHint: 'interactive' });
+          masterGain = context.createGain();
+          masterGain.gain.value = masterLevel;
+          masterGain.connect(context.destination);
+        }
 
-        await Promise.all((Object.keys(soundUrls) as IntroSoundKind[]).map(async (kind) => {
-          const loaded = await Promise.allSettled(soundUrls[kind].map((url) => load(context as AudioContext, url)));
-          const decoded = loaded.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
-          if (!destroyed && decoded.length) buffers.set(kind, decoded);
-        }));
-        return !destroyed && context.state === 'running' && buffers.size > 0;
+        const activeContext = context;
+        const resumed = await resumeAudioContext(activeContext, resumeTimeoutMs);
+        if (destroyed || !resumed) return false;
+
+        if (buffers.size === 0) {
+          await Promise.all((Object.keys(soundUrls) as IntroSoundKind[]).map(async (kind) => {
+            const loaded = await Promise.allSettled(soundUrls[kind].map((url) => load(activeContext, url)));
+            const decoded = loaded.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
+            if (!destroyed && decoded.length) buffers.set(kind, decoded);
+          }));
+        }
+        return !destroyed && activeContext.state === 'running' && buffers.size > 0;
       } catch {
         return false;
       }
     })();
+    unlockPromise = attempt;
 
-    return unlockPromise;
+    const unlocked = await attempt;
+    if (unlockPromise === attempt) unlockPromise = undefined;
+    if (!unlocked && context?.state === 'closed') {
+      unlockPromise = undefined;
+      buffers.clear();
+      masterGain?.disconnect();
+      context = undefined;
+      masterGain = undefined;
+    }
+    return unlocked;
   };
 
   const play = (kind: IntroSoundKind): void => {
@@ -122,7 +145,7 @@ export function createIntroAudioEngine(): IntroAudioEngine {
     mutedState = !mutedState;
     try { localStorage.setItem(soundPreferenceKey, mutedState ? 'muted' : 'enabled'); } catch { /* Storage may be disabled. */ }
     if (mutedState) stopVoices();
-    if (masterGain && context) masterGain.gain.setValueAtTime(mutedState ? 0 : .28, context.currentTime);
+    if (masterGain && context) masterGain.gain.setValueAtTime(mutedState ? 0 : masterLevel, context.currentTime);
     return mutedState;
   };
 

@@ -95,6 +95,10 @@ const personSchema = {
         root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered';
         document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#05080e' : '#efe8d1');
         if (explicitSkip) {
+          try {
+            const introKey = root.dataset.introSessionKey;
+            if (root.dataset.introMode !== 'design' && introKey) sessionStorage.setItem(introKey, 'seen');
+          } catch { /* Storage may be disabled. */ }
           currentUrl.searchParams.delete('intro');
           window.history.replaceState(null, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
         }

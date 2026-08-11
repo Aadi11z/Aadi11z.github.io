@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { KEYBOARD_BOUNDS, KEYBOARD_LAYOUT, KEYBOARD_NEIGHBORS } from '../src/data/keyboard-layout.ts';
 import { INTRO_NAME, INTRO_SEQUENCE, INTRO_TIMING } from '../src/data/intro-sequence.ts';
 import { profile } from '../src/data/profile.ts';
+import { shouldAutoEnterIntro } from '../src/scripts/intro/device-policy.ts';
 
 assert.equal(KEYBOARD_LAYOUT.length, 67, 'The compact keyboard must contain exactly 67 physical keys.');
 assert.equal(KEYBOARD_BOUNDS.keyCount, 67, 'Keyboard bounds must expose the physical key count.');
@@ -110,7 +111,25 @@ for (const step of INTRO_SEQUENCE) {
 }
 
 assert(INTRO_TIMING.bottomOutMs > 0, 'A key must reach bottom-out before its character appears.');
+assert(INTRO_TIMING.autoStartMs >= 0 && INTRO_TIMING.autoStartMs <= 150, 'Automatic typing must begin promptly after first paint.');
 assert(INTRO_TIMING.enterHoldMs >= 45 && INTRO_TIMING.enterHoldMs <= 100, 'Enter must have a perceptible but brief hold.');
 assert(INTRO_TIMING.transitionMs <= 500, 'The final transition must remain concise.');
+
+assert.equal(shouldAutoEnterIntro({
+  coarsePrimaryPointer: false,
+  anyHoverAvailable: true,
+}), false, 'A conventional laptop must wait for Enter or a scene click.');
+assert.equal(shouldAutoEnterIntro({
+  coarsePrimaryPointer: true,
+  anyHoverAvailable: false,
+}), true, 'A touch-first phone must press Enter automatically.');
+assert.equal(shouldAutoEnterIntro({
+  coarsePrimaryPointer: true,
+  anyHoverAvailable: true,
+}), false, 'A hybrid device with a hover pointer must retain the explicit Enter interaction.');
+assert.equal(shouldAutoEnterIntro({
+  coarsePrimaryPointer: false,
+  anyHoverAvailable: false,
+}), false, 'Unknown pointer capability must not assume touch-only behavior.');
 
 console.log(`Intro model checks passed: ${KEYBOARD_LAYOUT.length} unique keys across ${KEYBOARD_BOUNDS.rowCount} rows and ${INTRO_SEQUENCE.length} synchronized typing events verified.`);

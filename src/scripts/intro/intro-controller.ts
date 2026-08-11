@@ -1,5 +1,6 @@
 import { INTRO_NAME, INTRO_SEQUENCE, INTRO_TIMING, type IntroSequenceStep } from '@/data/intro-sequence';
 import { createIntroAudioEngine, type IntroAudioEngine } from './audio-engine';
+import { shouldAutoEnterCurrentDevice } from './device-policy';
 import { createKeyboardController, type KeyboardController } from './keyboard-controller';
 
 export type KeyboardIntroPhase =
@@ -27,11 +28,11 @@ const cursorByPhase: Readonly<Record<KeyboardIntroPhase, CursorPhase>> = Object.
 });
 
 const promptByPhase: Readonly<Record<KeyboardIntroPhase, string>> = Object.freeze({
-  'awaiting-gesture': 'Click Begin or press a letter key',
+  'awaiting-gesture': 'Starting automatically',
   lighting: 'Waking the keyboard',
   typing: `Typing ${INTRO_NAME}`,
   settling: 'Sequence complete',
-  'enter-armed': 'Press Enter to open Overview',
+  'enter-armed': 'Click anywhere or press Enter',
   impact: 'Enter pressed',
   transitioning: 'Opening Overview',
   entered: 'Overview open',
@@ -55,6 +56,11 @@ declare global {
 }
 
 const mountedIntros = new WeakSet<HTMLElement>();
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element
+    && Boolean(target.closest('a, button, input, select, textarea, summary, [role="button"], [contenteditable="true"]'));
+}
 
 function wait(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -81,11 +87,8 @@ class KeyboardIntroRuntime {
   private readonly gate: HTMLElement;
   private readonly output: HTMLElement;
   private readonly status: HTMLElement | null;
-  private readonly startControl: HTMLElement | null;
-  private readonly startLabel: HTMLElement | null;
   private readonly skipControl: HTMLElement | null;
   private readonly soundToggle: HTMLButtonElement | null;
-  private readonly soundLabel: HTMLElement | null;
   private readonly promptText: HTMLElement | null;
   private readonly heroTitle: HTMLElement | null;
   private readonly keyboard: KeyboardController;
@@ -93,7 +96,10 @@ class KeyboardIntroRuntime {
   private readonly listeners = new AbortController();
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   private readonly isDesignMode: boolean;
+  private readonly autoEnter: boolean;
   private readonly sessionKey: string | undefined;
+  private autoStartTimer: number | undefined;
+  private autoEnterTimer: number | undefined;
   private runController: AbortController | null = null;
   private transitionStarted = false;
   private enterUnlockPending = false;
@@ -109,22 +115,20 @@ class KeyboardIntroRuntime {
     this.gate = gate;
     this.output = output;
     this.status = intro.querySelector<HTMLElement>('[data-intro-status]');
-    this.startControl = intro.querySelector<HTMLElement>('[data-intro-start]');
-    this.startLabel = this.startControl?.querySelector<HTMLElement>('[data-intro-start-label]') ?? null;
     this.skipControl = intro.querySelector<HTMLElement>('[data-intro-skip]');
     this.soundToggle = intro.querySelector<HTMLButtonElement>('[data-sound-toggle]');
-    this.soundLabel = this.soundToggle?.querySelector<HTMLElement>('[data-sound-label]') ?? null;
     this.promptText = intro.querySelector<HTMLElement>('[data-intro-prompt-text]');
     this.heroTitle = overview.querySelector<HTMLElement>('#hero-title');
     this.keyboard = createKeyboardController(keyboardElement);
     this.audio = createIntroAudioEngine();
     this.isDesignMode = this.root.dataset.introMode === 'design';
+    this.autoEnter = !this.isDesignMode && shouldAutoEnterCurrentDevice();
     this.sessionKey = this.root.dataset.introSessionKey;
   }
 
   mount(): void {
     this.intro.dataset.enhanced = 'true';
-    this.updateSoundControl();
+    this.intro.dataset.enterMode = this.autoEnter ? 'automatic' : 'manual';
 
     if (!this.isDesignMode && this.root.dataset.introVisit === 'returning') {
       this.finishEntered(false, false);
@@ -132,6 +136,7 @@ class KeyboardIntroRuntime {
     }
 
     this.addListeners();
+    this.updateSoundControl();
     if (this.isDesignMode) {
       this.intro.dataset.designMode = 'true';
       this.installDebugApi();
@@ -139,20 +144,23 @@ class KeyboardIntroRuntime {
 
     this.setGateState('active');
     if (this.reducedMotion.matches) {
-      this.armCompletedSequence(this.isDesignMode
-        ? 'Reduced motion is active. Enter previews the impact.'
-        : 'Reduced motion is active. Press Enter to open Overview.');
+      this.armCompletedSequence(this.getReducedMotionStatus());
       return;
     }
 
     this.output.textContent = '';
     this.setPhase('awaiting-gesture');
-    this.setStatus('Intro ready. Begin the keyboard sequence or press Escape to skip.');
+    if (document.visibilityState === 'visible') {
+      this.setStatus('Keyboard intro starting automatically. Press Escape to skip.');
+      this.scheduleAutomaticStart();
+    } else {
+      this.setStatus('Keyboard intro will start when this tab becomes visible.');
+    }
   }
 
   private addListeners(): void {
     const options = { signal: this.listeners.signal };
-    this.startControl?.addEventListener('click', this.handleStartClick, options);
+    this.intro.addEventListener('pointerdown', this.handleIntroPointerDown, options);
     this.skipControl?.addEventListener('click', this.handleSkipClick, options);
     this.soundToggle?.addEventListener('click', this.handleSoundClick, options);
     document.addEventListener('keydown', this.handleKeyDown, options);
@@ -161,10 +169,18 @@ class KeyboardIntroRuntime {
     this.reducedMotion.addEventListener('change', this.handleReducedMotionChange, options);
   }
 
-  private readonly handleStartClick = (event: Event): void => {
-    event.preventDefault();
-    if (this.phase === 'enter-armed') void this.unlockThenPressEnter(true);
-    else this.startSequence();
+  private readonly handleIntroPointerDown = (event: PointerEvent): void => {
+    if (event.button !== 0 || this.completed || isInteractiveTarget(event.target)) return;
+    if (this.phase === 'awaiting-gesture') {
+      event.preventDefault();
+      this.startSequence(event.isTrusted);
+    } else if (this.phase === 'enter-armed') {
+      event.preventDefault();
+      if (event.isTrusted) void this.unlockThenPressEnter(true);
+      else this.pressEnter(true);
+    } else if (event.isTrusted && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')) {
+      void this.audio.unlock();
+    }
   };
 
   private readonly handleSkipClick = (event: Event): void => {
@@ -172,10 +188,10 @@ class KeyboardIntroRuntime {
     this.skip(true);
   };
 
-  private readonly handleSoundClick = (): void => {
+  private readonly handleSoundClick = (event: MouseEvent): void => {
     const muted = this.audio.toggleMuted();
-    if (!muted) void this.audio.unlock();
     this.updateSoundControl();
+    if (!muted && event.isTrusted) void this.audio.unlock();
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -187,31 +203,79 @@ class KeyboardIntroRuntime {
       return;
     }
 
-    const target = event.target instanceof Element ? event.target : null;
-    const isInteractiveTarget = Boolean(target?.closest('a, button, input, select, textarea, summary, [role="button"], [contenteditable="true"]'));
-    if (event.key === 'Enter' && !isInteractiveTarget) {
-      event.preventDefault();
-      if (this.phase === 'awaiting-gesture') this.startSequence();
-      else void this.unlockThenPressEnter(true);
+    const interactiveTarget = isInteractiveTarget(event.target);
+    if (event.key === 'Enter' && !interactiveTarget) {
+      if (this.phase === 'awaiting-gesture') {
+        event.preventDefault();
+        this.startSequence(event.isTrusted);
+      } else if (this.phase === 'enter-armed') {
+        event.preventDefault();
+        if (event.isTrusted) void this.unlockThenPressEnter(true);
+        else this.pressEnter(true);
+      } else if (event.isTrusted && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')) {
+        void this.audio.unlock();
+      }
       return;
     }
 
     if (
       this.phase === 'awaiting-gesture'
+      && !interactiveTarget
       && !event.altKey
       && !event.ctrlKey
       && !event.metaKey
-      && /^[a-z]$/i.test(event.key)
+      && !['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(event.key)
     ) {
-      this.startSequence();
+      if (event.key === ' ' || event.key.startsWith('Arrow')) event.preventDefault();
+      this.startSequence(event.isTrusted);
+      return;
+    }
+
+    if (
+      !interactiveTarget
+      && event.isTrusted
+      && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')
+    ) {
+      void this.audio.unlock();
     }
   };
 
   private readonly handleVisibilityChange = (): void => {
-    if (document.visibilityState !== 'hidden' || this.completed) return;
-    this.keyboard.releaseAll('physical');
-    if (this.isDesignMode) this.armCompletedSequence('Sequence paused while the page was hidden.');
-    else this.finishEntered(false, true);
+    if (this.completed) return;
+    if (document.visibilityState === 'hidden') {
+      this.keyboard.releaseAll('physical');
+      if (this.phase === 'awaiting-gesture') {
+        this.cancelAutomaticStart();
+        this.setStatus('Keyboard intro will start when this tab becomes visible.');
+      } else if (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling') {
+        this.cancelRun();
+        this.output.textContent = '';
+        this.setPhase('awaiting-gesture');
+        this.setStatus('Keyboard intro paused until this tab becomes visible.');
+      } else if (this.phase === 'enter-armed') {
+        this.cancelAutomaticEnter();
+      } else if (this.phase === 'impact' || this.phase === 'transitioning') {
+        this.cancelRun();
+        this.transitionStarted = false;
+        this.output.textContent = INTRO_NAME;
+        delete this.root.dataset.introTransition;
+        delete this.gate.dataset.introTransitioned;
+        this.setGateState('active');
+        this.setPhase('enter-armed');
+        this.setStatus('Opening Overview paused until this tab becomes visible.');
+      }
+      return;
+    }
+
+    if (this.phase === 'awaiting-gesture') {
+      this.setStatus('Keyboard intro starting automatically. Press Escape to skip.');
+      this.scheduleAutomaticStart();
+    } else if (this.phase === 'enter-armed') {
+      this.setStatus(this.autoEnter
+        ? 'Typing complete. Opening Overview automatically.'
+        : 'Typing complete. Click anywhere or press Enter to open Overview.');
+      if (this.autoEnter) this.scheduleAutomaticEnter();
+    }
   };
 
   private readonly handlePageHide = (): void => {
@@ -220,23 +284,20 @@ class KeyboardIntroRuntime {
 
   private readonly handleReducedMotionChange = (event: MediaQueryListEvent): void => {
     if (!event.matches || this.completed) return;
-    this.armCompletedSequence(this.isDesignMode
-      ? 'Reduced motion is active. Enter previews the impact.'
-      : 'Reduced motion is active. Press Enter to open Overview.');
+    this.armCompletedSequence(this.getReducedMotionStatus());
   };
 
-  private startSequence(): void {
+  private startSequence(attemptAudio = false): void {
     if (this.completed || this.transitionStarted) return;
     if (this.phase !== 'awaiting-gesture' && !(this.isDesignMode && this.phase === 'enter-armed')) return;
 
     this.cancelRun();
     this.output.textContent = '';
-    this.startControl?.setAttribute('aria-disabled', 'true');
     const controller = new AbortController();
     this.runController = controller;
-    // Decoding local audio must never hold the visual sequence hostage. If
-    // audio is unavailable or slow, the intro remains fully functional.
-    void this.audio.unlock();
+    // Visual autoplay must never make an untrusted audio request. A real
+    // pointer/key gesture can unlock sound without controlling the timeline.
+    if (attemptAudio) void this.audio.unlock();
     void this.playSequence(controller);
   }
 
@@ -257,12 +318,11 @@ class KeyboardIntroRuntime {
       this.setPhase('enter-armed');
       this.setStatus(this.isDesignMode
         ? 'Design mode complete. Enter previews the impact without opening Overview.'
-        : 'Typing complete. Press Enter or wait to open Overview.');
+        : (this.autoEnter
+          ? 'Typing complete. Opening Overview automatically.'
+          : 'Typing complete. Click anywhere or press Enter to open Overview.'));
 
-      if (!this.isDesignMode) {
-        await wait(INTRO_TIMING.enterArmedMs, controller.signal);
-        this.pressEnter(false);
-      }
+      if (this.autoEnter) this.scheduleAutomaticEnter();
     } catch {
       // Aborting a sequential run is the normal path for Enter, Skip, visibility,
       // reduced motion, replay, and completion.
@@ -309,6 +369,7 @@ class KeyboardIntroRuntime {
 
   private async unlockThenPressEnter(focusHeading: boolean): Promise<void> {
     if (this.enterUnlockPending || this.completed || this.transitionStarted) return;
+    this.cancelAutomaticEnter();
     this.enterUnlockPending = true;
     let timeoutId: number | undefined;
     const timeout = new Promise<false>((resolve) => {
@@ -376,7 +437,7 @@ class KeyboardIntroRuntime {
     this.setGateState('active');
     this.setPhase('enter-armed');
     this.setStatus(status);
-    this.startControl?.setAttribute('aria-disabled', 'false');
+    if (this.autoEnter && document.visibilityState === 'visible') this.scheduleAutomaticEnter();
   }
 
   private skip(focusHeading: boolean): void {
@@ -400,6 +461,7 @@ class KeyboardIntroRuntime {
       let transition: ViewTransition | undefined;
       try {
         transition = transitionDocument.startViewTransition(() => {
+          if (signal.aborted) return;
           this.gate.dataset.introTransitioned = 'true';
           this.finishEntered(shouldFocusHeading, true);
         });
@@ -416,10 +478,11 @@ class KeyboardIntroRuntime {
         } finally {
           delete this.root.dataset.introTransition;
         }
-        if (this.completed) return;
+        if (this.completed || signal.aborted) return;
       }
     }
 
+    if (signal.aborted) return;
     this.setPhase('transitioning');
     this.setGateState('exiting');
     await wait(this.reducedMotion.matches ? 0 : INTRO_TIMING.transitionMs, signal);
@@ -445,6 +508,8 @@ class KeyboardIntroRuntime {
   }
 
   private cancelRun(): void {
+    this.cancelAutomaticStart();
+    this.cancelAutomaticEnter();
     this.runController?.abort();
     this.runController = null;
     this.keyboard.releaseAll('script');
@@ -462,13 +527,41 @@ class KeyboardIntroRuntime {
     this.phase = phase;
     this.intro.dataset.phase = phase;
     this.intro.dataset.cursorPhase = cursorByPhase[phase];
-    if (this.promptText) this.promptText.textContent = promptByPhase[phase];
-    if (this.startLabel) {
-      this.startLabel.textContent = phase === 'enter-armed'
-        ? (this.isDesignMode ? 'Preview Enter' : 'Open Overview')
-        : 'Begin intro';
+    if (this.promptText) {
+      this.promptText.textContent = phase === 'enter-armed' && this.autoEnter
+        ? 'Opening Overview automatically'
+        : promptByPhase[phase];
     }
-    this.startControl?.setAttribute('aria-disabled', String(phase !== 'awaiting-gesture' && phase !== 'enter-armed'));
+  }
+
+  private scheduleAutomaticStart(): void {
+    if (this.autoStartTimer !== undefined || document.visibilityState !== 'visible') return;
+    this.autoStartTimer = window.setTimeout(() => {
+      this.autoStartTimer = undefined;
+      if (document.visibilityState !== 'visible' || this.phase !== 'awaiting-gesture') return;
+      this.startSequence(false);
+    }, INTRO_TIMING.autoStartMs);
+  }
+
+  private cancelAutomaticStart(): void {
+    if (this.autoStartTimer === undefined) return;
+    window.clearTimeout(this.autoStartTimer);
+    this.autoStartTimer = undefined;
+  }
+
+  private scheduleAutomaticEnter(): void {
+    if (!this.autoEnter || this.autoEnterTimer !== undefined || document.visibilityState !== 'visible') return;
+    this.autoEnterTimer = window.setTimeout(() => {
+      this.autoEnterTimer = undefined;
+      if (document.visibilityState !== 'visible' || this.phase !== 'enter-armed') return;
+      this.pressEnter(false);
+    }, INTRO_TIMING.enterArmedMs);
+  }
+
+  private cancelAutomaticEnter(): void {
+    if (this.autoEnterTimer === undefined) return;
+    window.clearTimeout(this.autoEnterTimer);
+    this.autoEnterTimer = undefined;
   }
 
   private setGateState(state: GateState): void {
@@ -480,10 +573,19 @@ class KeyboardIntroRuntime {
     if (this.status) this.status.textContent = message;
   }
 
+  private getReducedMotionStatus(): string {
+    if (this.isDesignMode) return 'Reduced motion is active. Click the scene or press Enter to preview the impact.';
+    return this.autoEnter
+      ? 'Reduced motion is active. Opening Overview automatically.'
+      : 'Reduced motion is active. Click the scene or press Enter to open Overview.';
+  }
+
   private updateSoundControl(): void {
-    const muted = this.audio.muted;
-    this.soundToggle?.setAttribute('aria-pressed', String(muted));
-    if (this.soundLabel) this.soundLabel.textContent = muted ? 'Sound off' : 'Sound on';
+    if (!this.soundToggle) return;
+    const enabled = !this.audio.muted;
+    const action = enabled ? 'Mute keyboard sound' : 'Enable keyboard sound';
+    this.soundToggle.setAttribute('aria-pressed', String(enabled));
+    this.soundToggle.title = action;
   }
 
   private installDebugApi(): void {

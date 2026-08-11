@@ -1,107 +1,101 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const sampleRate = 48_000;
 const outputDirectory = resolve('src/assets/audio/keyboard');
+const defaultSource = resolve(outputDirectory, 'yzaak-keyboard-sound-satisfying-304411.mp3');
+const sourcePath = resolve(process.env.KEYBOARD_AUDIO_SOURCE ?? defaultSource);
+const expectedSourceSha256 = 'bdfa594696dea0570ad6771fd5b7c4a9fd81e173ec38690ff56fb9c5e1f00707';
 const temporaryDirectory = mkdtempSync(join(tmpdir(), 'portfolio-keyboard-audio-'));
 
+/**
+ * @typedef {object} SampleDefinition
+ * @property {string} name
+ * @property {number} start
+ * @property {number} duration
+ * @property {number} gainDb
+ * @property {number} highpass
+ * @property {number} lowpass
+ * @property {number} fadeOut
+ * @property {number} [eqFrequency]
+ * @property {number} [eqGainDb]
+ * @property {number} [pitchRate]
+ */
+
+/** @type {SampleDefinition[]} */
 const samples = [
-  { name: 'key-01', seed: 0x10a1, duration: .105, bodyFrequency: 910, click: .62, body: .32 },
-  { name: 'key-02', seed: 0x20b2, duration: .112, bodyFrequency: 980, click: .58, body: .35 },
-  { name: 'key-03', seed: 0x30c3, duration: .101, bodyFrequency: 845, click: .66, body: .3 },
-  { name: 'key-04', seed: 0x40d4, duration: .116, bodyFrequency: 1_060, click: .56, body: .37 },
-  { name: 'space', seed: 0x50e5, duration: .17, bodyFrequency: 515, click: .44, body: .5 },
-  { name: 'enter', seed: 0x60f6, duration: .205, bodyFrequency: 430, click: .5, body: .56 },
+  { name: 'key-01', start: .825, duration: .16, gainDb: 3.5, highpass: 55, lowpass: 11_000, fadeOut: .04 },
+  { name: 'key-02', start: 2.315, duration: .16, gainDb: 6, highpass: 55, lowpass: 11_000, fadeOut: .04 },
+  { name: 'key-03', start: 6.18, duration: .16, gainDb: 1.5, highpass: 55, lowpass: 11_000, fadeOut: .04 },
+  { name: 'key-04', start: 8.435, duration: .16, gainDb: 4, highpass: 55, lowpass: 11_000, fadeOut: .04 },
+  { name: 'space', start: 9.59, duration: .2, gainDb: 0, highpass: 45, lowpass: 8_500, fadeOut: .05, eqFrequency: 500, eqGainDb: 3 },
+  { name: 'enter', start: 17.97, duration: .22, gainDb: 4.5, highpass: 40, lowpass: 7_000, fadeOut: .05, eqFrequency: 360, eqGainDb: 4, pitchRate: 44_000 },
 ];
 
-/** @param {number} seed */
-function createNoise(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state ^= state << 13;
-    state ^= state >>> 17;
-    state ^= state << 5;
-    return ((state >>> 0) / 0xffffffff) * 2 - 1;
-  };
+/** @param {string} message */
+function fail(message) {
+  throw new Error(`${message}\nSee src/assets/audio/keyboard/PROVENANCE.md for source setup.`);
 }
 
-/**
- * @param {{ seed: number; duration: number; bodyFrequency: number; click: number; body: number }} definition
- */
-function synthesize({ seed, duration, bodyFrequency, click, body }) {
-  const frameCount = Math.ceil(sampleRate * duration);
-  const pcm = new Float32Array(frameCount);
-  const random = createNoise(seed);
-  let previousNoise = 0;
-  let lowNoise = 0;
+if (!existsSync(sourcePath)) {
+  fail(`Missing local keyboard recording: ${sourcePath}`);
+}
 
-  for (let frame = 0; frame < frameCount; frame += 1) {
-    const time = frame / sampleRate;
-    const noise = random();
-    lowNoise += .12 * (noise - lowNoise);
-    const highNoise = noise - previousNoise * .82;
-    previousNoise = noise;
+const sourceSha256 = createHash('sha256').update(readFileSync(sourcePath)).digest('hex');
+if (sourceSha256 !== expectedSourceSha256) {
+  fail(`Keyboard recording checksum mismatch. Expected ${expectedSourceSha256}, received ${sourceSha256}.`);
+}
 
-    const attack = 1 - Math.exp(-time * 1_800);
-    const clickEnvelope = attack * Math.exp(-time * 92);
-    const bodyEnvelope = attack * Math.exp(-time * 34);
-    const clickSignal = highNoise * clickEnvelope * click;
-    const bodySignal = (
-      Math.sin(2 * Math.PI * bodyFrequency * time)
-      + .43 * Math.sin(2 * Math.PI * bodyFrequency * 1.91 * time + .5)
-      + .19 * Math.sin(2 * Math.PI * bodyFrequency * 3.08 * time + 1.2)
-    ) * bodyEnvelope * body;
-    const housing = lowNoise * Math.exp(-time * 28) * .16;
+/** @param {SampleDefinition} definition */
+function createFilter(definition) {
+  const filters = [
+    'pan=mono|c0=.5*c0+.5*c1',
+    `atrim=start=${definition.start}:duration=${definition.duration}`,
+    'asetpts=PTS-STARTPTS',
+    `highpass=f=${definition.highpass}`,
+    `lowpass=f=${definition.lowpass}`,
+  ];
 
-    const returnTime = time - Math.min(.048, duration * .44);
-    const returnClick = returnTime > 0
-      ? (noise - lowNoise) * Math.exp(-returnTime * 135) * .095
-      : 0;
-    const fadeOut = Math.min(1, (duration - time) * 180);
-    pcm[frame] = Math.tanh((clickSignal + bodySignal + housing + returnClick) * 1.18) * fadeOut;
+  if (definition.eqFrequency && definition.eqGainDb) {
+    filters.push(`equalizer=f=${definition.eqFrequency}:t=q:w=1:g=${definition.eqGainDb}`);
+  }
+  if (definition.pitchRate) {
+    filters.push('aresample=48000', `asetrate=${definition.pitchRate}`, 'aresample=48000');
   }
 
-  return pcm;
-}
-
-/** @param {string} file @param {Float32Array} pcm */
-function writeWave(file, pcm) {
-  const dataSize = pcm.length * 2;
-  const buffer = Buffer.alloc(44 + dataSize);
-  buffer.write('RIFF', 0);
-  buffer.writeUInt32LE(36 + dataSize, 4);
-  buffer.write('WAVE', 8);
-  buffer.write('fmt ', 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(1, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(sampleRate * 2, 28);
-  buffer.writeUInt16LE(2, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write('data', 36);
-  buffer.writeUInt32LE(dataSize, 40);
-  pcm.forEach((sample, index) => buffer.writeInt16LE(Math.round(Math.max(-1, Math.min(1, sample)) * 32_767), 44 + index * 2));
-  writeFileSync(file, buffer);
+  filters.push(
+    `volume=${definition.gainDb}dB`,
+    'afade=t=in:st=0:d=0.003',
+    `afade=t=out:st=${definition.duration - definition.fadeOut}:d=${definition.fadeOut}`,
+  );
+  return filters.join(',');
 }
 
 mkdirSync(outputDirectory, { recursive: true });
 
 try {
   for (const definition of samples) {
-    const wavePath = join(temporaryDirectory, `${definition.name}.wav`);
-    const outputPath = join(outputDirectory, `${definition.name}.webm`);
-    writeWave(wavePath, synthesize(definition));
+    const temporaryOutput = join(temporaryDirectory, `${definition.name}.webm`);
     const result = spawnSync('ffmpeg', [
-      '-hide_banner', '-loglevel', 'error', '-y', '-i', wavePath,
-      '-ac', '1', '-ar', String(sampleRate), '-c:a', 'libopus', '-b:a', '24k', '-application', 'audio', outputPath,
+      '-hide_banner', '-loglevel', 'error', '-y', '-i', sourcePath,
+      '-af', createFilter(definition),
+      '-ac', '1', '-ar', '48000', '-c:a', 'libopus', '-b:a', '24k', '-application', 'audio',
+      '-fflags', '+bitexact', '-flags:a', '+bitexact', '-map_metadata', '-1',
+      temporaryOutput,
     ], { stdio: 'inherit' });
-    if (result.status !== 0) throw new Error(`ffmpeg failed while creating ${definition.name}.webm`);
+    if (result.status !== 0) fail(`ffmpeg failed while creating ${definition.name}.webm`);
+  }
+
+  for (const definition of samples) {
+    renameSync(
+      join(temporaryDirectory, `${definition.name}.webm`),
+      join(outputDirectory, `${definition.name}.webm`),
+    );
   }
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });
 }
 
-console.log(`Generated ${samples.length} original keyboard samples in ${outputDirectory}.`);
+console.log(`Extracted ${samples.length} keyboard samples from verified local source ${basename(sourcePath)}.`);
