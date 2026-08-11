@@ -1,0 +1,47 @@
+---
+import { profile } from '@/data/profile';
+import KeyboardScene from './KeyboardScene.astro';
+import IntroControls from './IntroControls.astro';
+import '@/styles/keyboard-intro.css';
+---
+
+<section
+  class="keyboard-intro"
+  data-keyboard-intro
+  data-name={profile.name}
+  data-phase="ssr"
+  aria-describedby="keyboard-intro-description"
+>
+  <p id="keyboard-intro-description" class="visually-hidden">
+    A decorative mechanical keyboard types {profile.name}. Start the sequence, skip it, or press Escape at any time to open the portfolio.
+  </p>
+
+  <div class="intro-ambient" aria-hidden="true"></div>
+
+  <header class="intro-nameplate">
+    <p class="intro-kicker">Portfolio Website</p>
+    <div class="intro-typed-title" aria-hidden="true" data-intro-title>
+      <span data-typed-name>{profile.name}</span>
+      <span class="intro-cursor"></span>
+    </div>
+  </header>
+
+  <KeyboardScene />
+
+  <div class="intro-footer">
+    <p class="intro-prompt" data-intro-prompt>
+      <span aria-hidden="true">↳</span>
+      <span data-intro-prompt-text>Click Begin or press a letter key</span>
+    </p>
+    <IntroControls />
+  </div>
+
+  <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-intro-status>
+    Intro ready. Begin the keyboard sequence or skip to the portfolio.
+  </p>
+</section>
+
+<script>
+  import { mountKeyboardIntros } from '@/scripts/intro/intro-controller';
+  mountKeyboardIntros();
+</script>

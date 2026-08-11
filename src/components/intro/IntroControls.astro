@@ -1,0 +1,17 @@
+---
+import { withBase } from '@/data/site';
+
+const fallbackUrl = `${withBase('/')}?intro=skip#overview`;
+---
+
+<div class="intro-controls" data-intro-controls>
+  <a class="intro-control intro-control-primary" href={fallbackUrl} data-intro-start>
+    <span data-intro-start-label>Begin intro</span>
+    <small>keyboard + sound</small>
+  </a>
+  <button class="intro-control intro-sound-toggle" type="button" aria-pressed="false" data-sound-toggle>
+    <span data-sound-label>Sound on</span>
+    <small>toggle audio</small>
+  </button>
+  <a class="intro-skip" href={fallbackUrl} data-intro-skip>Skip intro</a>
+</div>

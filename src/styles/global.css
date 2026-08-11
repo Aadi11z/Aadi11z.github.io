@@ -18,7 +18,6 @@ body {
   font-size: 1rem;
   line-height: 1.65;
   text-rendering: optimizeLegibility;
-  transition: background-color var(--duration) ease, color var(--duration) ease;
 }
 
 body::before {
@@ -30,6 +29,12 @@ body::before {
   content: '';
   opacity: .12;
   pointer-events: none;
+}
+
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
 }
 
 .visually-hidden {

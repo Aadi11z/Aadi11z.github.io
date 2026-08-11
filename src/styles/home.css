@@ -82,10 +82,8 @@ html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .site-header {
 
 html.js[data-hero-intro-state='active'] body[data-layout='deck'] .hero,
 html.js[data-hero-intro-state='active'] body[data-layout='deck'] .hero-intro,
-html.js[data-hero-intro-state='active'] body[data-layout='deck'] .typing-station,
 html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .hero,
-html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .hero-intro,
-html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .typing-station {
+html.js[data-hero-intro-state='exiting'] body[data-layout='deck'] .hero-intro {
   min-height: 100svh;
 }
 
@@ -94,7 +92,7 @@ html.deck-ready[data-hero-intro-state='exiting'] body[data-layout='deck'] {
   grid-template-rows: minmax(0, 1fr);
 }
 
-html.js .typing-station:not([data-enhanced='true']) [data-typed-name] {
+html.js .keyboard-intro:not([data-enhanced='true']) [data-typed-name] {
   visibility: hidden;
 }
 
@@ -112,6 +110,11 @@ html.js .typing-station:not([data-enhanced='true']) [data-typed-name] {
 .hero[data-intro-state='entered'] .hero-overview {
   display: block;
   animation: hero-overview-enter 320ms var(--ease-out) both;
+}
+
+html[data-intro-transition='keyboard'] .hero[data-intro-state='entered'] .hero-overview,
+.hero[data-intro-transitioned='true'][data-intro-state='entered'] .hero-overview {
+  animation: none;
 }
 
 html[data-intro-visit='returning'] .hero[data-intro-state='entered'] .hero-overview {
@@ -134,6 +137,39 @@ html[data-intro-visit='returning'] .hero[data-intro-state='entered'] .hero-overv
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+html[data-intro-transition='keyboard']::view-transition-group(root),
+html[data-intro-transition='keyboard']::view-transition-group(intro-hero-name) {
+  animation-duration: 480ms;
+  animation-timing-function: var(--ease-out);
+}
+
+html[data-intro-transition='keyboard']::view-transition-old(root) {
+  animation: intro-root-out 480ms var(--ease-out) both;
+}
+
+html[data-intro-transition='keyboard']::view-transition-new(root) {
+  animation: intro-root-in 480ms var(--ease-out) both;
+}
+
+html[data-intro-transition='keyboard']::view-transition-old(intro-hero-name),
+html[data-intro-transition='keyboard']::view-transition-new(intro-hero-name) {
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes intro-root-out {
+  to {
+    opacity: 0;
+    transform: translateY(2.5%) scale(.985);
+  }
+}
+
+@keyframes intro-root-in {
+  from {
+    opacity: 0;
   }
 }
 
