@@ -7,12 +7,15 @@ import enterUrl from '@/assets/audio/keyboard/enter.webm?url&no-inline';
 import { resumeAudioContext } from './audio-context';
 
 export type IntroSoundKind = 'normal' | 'space' | 'enter';
+export type IntroAudioState = 'idle' | 'loading' | 'blocked' | 'ready' | 'muted' | 'error';
 
 export type IntroAudioEngine = {
+  prepare: () => Promise<boolean>;
   unlock: () => Promise<boolean>;
   play: (kind: IntroSoundKind) => void;
   toggleMuted: () => boolean;
   readonly muted: boolean;
+  readonly state: IntroAudioState;
   destroy: () => void;
 };
 
@@ -24,7 +27,7 @@ const soundUrls: Record<IntroSoundKind, readonly string[]> = {
 
 const maxVoices = 6;
 const masterLevel = .42;
-const resumeTimeoutMs = 250;
+const resumeTimeoutMs = 800;
 const soundPreferenceKey = 'portfolio-intro-sound-v1';
 const audioCacheMode: RequestCache = import.meta.env.DEV ? 'no-store' : 'force-cache';
 
@@ -39,8 +42,9 @@ function readMutedPreference(): boolean {
 export function createIntroAudioEngine(): IntroAudioEngine {
   let context: AudioContext | undefined;
   let masterGain: GainNode | undefined;
-  let unlockPromise: Promise<boolean> | undefined;
+  let preparePromise: Promise<boolean> | undefined;
   let mutedState = readMutedPreference();
+  let audioState: IntroAudioState = mutedState ? 'muted' : 'idle';
   let destroyed = false;
   const loadController = new AbortController();
   const buffers = new Map<IntroSoundKind, AudioBuffer[]>();
@@ -59,53 +63,88 @@ export function createIntroAudioEngine(): IntroAudioEngine {
     return audioContext.decodeAudioData(await response.arrayBuffer());
   };
 
-  const unlock = async (): Promise<boolean> => {
+  const ensureContext = (): AudioContext | undefined => {
+    if (context && context.state !== 'closed') return context;
+    const AudioContextConstructor = window.AudioContext
+      ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextConstructor) return undefined;
+    buffers.clear();
+    masterGain?.disconnect();
+    context = new AudioContextConstructor({ latencyHint: 'interactive' });
+    masterGain = context.createGain();
+    masterGain.gain.value = masterLevel;
+    masterGain.connect(context.destination);
+    return context;
+  };
+
+  const prepare = async (): Promise<boolean> => {
     if (destroyed || mutedState) return false;
-    if (context?.state === 'running' && buffers.size > 0) return true;
-    if (unlockPromise) return unlockPromise;
+    if (buffers.size > 0) {
+      audioState = context?.state === 'running' ? 'ready' : 'blocked';
+      return true;
+    }
+    if (preparePromise) return preparePromise;
 
     const attempt = (async () => {
       try {
-        const AudioContextConstructor = window.AudioContext
-          ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-        if (!AudioContextConstructor) return false;
-        if (!context || context.state === 'closed') {
-          buffers.clear();
-          masterGain?.disconnect();
-          context = new AudioContextConstructor({ latencyHint: 'interactive' });
-          masterGain = context.createGain();
-          masterGain.gain.value = masterLevel;
-          masterGain.connect(context.destination);
+        const activeContext = ensureContext();
+        if (!activeContext) {
+          audioState = 'error';
+          return false;
         }
-
-        const activeContext = context;
-        const resumed = await resumeAudioContext(activeContext, resumeTimeoutMs);
-        if (destroyed || !resumed) return false;
-
-        if (buffers.size === 0) {
-          await Promise.all((Object.keys(soundUrls) as IntroSoundKind[]).map(async (kind) => {
-            const loaded = await Promise.allSettled(soundUrls[kind].map((url) => load(activeContext, url)));
-            const decoded = loaded.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
-            if (!destroyed && decoded.length) buffers.set(kind, decoded);
-          }));
-        }
-        return !destroyed && activeContext.state === 'running' && buffers.size > 0;
+        audioState = 'loading';
+        await Promise.all((Object.keys(soundUrls) as IntroSoundKind[]).map(async (kind) => {
+          const loaded = await Promise.allSettled(soundUrls[kind].map((url) => load(activeContext, url)));
+          const decoded = loaded.flatMap((result) => result.status === 'fulfilled' ? [result.value] : []);
+          if (!destroyed && decoded.length) buffers.set(kind, decoded);
+        }));
+        const prepared = !destroyed && buffers.size > 0;
+        audioState = mutedState
+          ? 'muted'
+          : prepared
+            ? (activeContext.state === 'running' ? 'ready' : 'blocked')
+            : 'error';
+        return prepared;
       } catch {
+        audioState = destroyed ? audioState : 'error';
         return false;
       }
     })();
-    unlockPromise = attempt;
-
-    const unlocked = await attempt;
-    if (unlockPromise === attempt) unlockPromise = undefined;
-    if (!unlocked && context?.state === 'closed') {
-      unlockPromise = undefined;
-      buffers.clear();
-      masterGain?.disconnect();
-      context = undefined;
-      masterGain = undefined;
+    preparePromise = attempt;
+    try {
+      return await attempt;
+    } finally {
+      if (preparePromise === attempt) preparePromise = undefined;
     }
-    return unlocked;
+  };
+
+  const unlock = async (): Promise<boolean> => {
+    if (destroyed || mutedState) return false;
+    if (context?.state === 'running' && buffers.size > 0) {
+      audioState = 'ready';
+      return true;
+    }
+    return (async () => {
+      try {
+        const activeContext = ensureContext();
+        if (!activeContext) {
+          audioState = 'error';
+          return false;
+        }
+        const [, prepared] = await Promise.all([
+          resumeAudioContext(activeContext, resumeTimeoutMs),
+          prepare(),
+        ]);
+        // A trusted gesture may have resumed the shared context while an older
+        // best-effort autoplay attempt was still pending.
+        const unlocked = !destroyed && prepared && activeContext.state === 'running';
+        audioState = mutedState ? 'muted' : (unlocked ? 'ready' : (prepared ? 'blocked' : 'error'));
+        return unlocked;
+      } catch {
+        audioState = destroyed ? audioState : 'error';
+        return false;
+      }
+    })();
   };
 
   const play = (kind: IntroSoundKind): void => {
@@ -146,14 +185,19 @@ export function createIntroAudioEngine(): IntroAudioEngine {
     try { localStorage.setItem(soundPreferenceKey, mutedState ? 'muted' : 'enabled'); } catch { /* Storage may be disabled. */ }
     if (mutedState) stopVoices();
     if (masterGain && context) masterGain.gain.setValueAtTime(mutedState ? 0 : masterLevel, context.currentTime);
+    audioState = mutedState
+      ? 'muted'
+      : (context?.state === 'running' && buffers.size > 0 ? 'ready' : 'idle');
     return mutedState;
   };
 
   return {
+    prepare,
     unlock,
     play,
     toggleMuted,
     get muted() { return mutedState; },
+    get state() { return audioState; },
     destroy() {
       destroyed = true;
       loadController.abort();

@@ -15,6 +15,7 @@ const requiredFiles = [
   'src/components/intro/KeyboardScene.astro',
   'src/scripts/intro/intro-controller.ts',
   'src/scripts/intro/device-policy.ts',
+  'src/scripts/intro/visit-policy.ts',
   'src/scripts/intro/keyboard-controller.ts',
   'src/scripts/intro/audio-context.ts',
   'src/scripts/intro/audio-engine.ts',
@@ -68,6 +69,7 @@ const keyboardIntro = read('src/components/intro/KeyboardIntro.astro');
 const keyboardScene = read('src/components/intro/KeyboardScene.astro');
 const introController = read('src/scripts/intro/intro-controller.ts');
 const devicePolicy = read('src/scripts/intro/device-policy.ts');
+const visitPolicy = read('src/scripts/intro/visit-policy.ts');
 const keyboardController = read('src/scripts/intro/keyboard-controller.ts');
 const audioContext = read('src/scripts/intro/audio-context.ts');
 const audioEngine = read('src/scripts/intro/audio-engine.ts');
@@ -134,6 +136,7 @@ for (const behavior of [
   "event.key === 'Escape'",
   "addEventListener('visibilitychange'",
   "addEventListener('pagehide'",
+  "addEventListener('pageshow'",
   "this.intro.addEventListener('pointerdown', this.handleIntroPointerDown, options)",
   'startViewTransition',
   'isInteractiveTarget',
@@ -148,7 +151,7 @@ for (const behavior of [
   'if (this.autoEnter) this.scheduleAutomaticEnter()',
   "document.visibilityState === 'visible'",
   "this.intro.dataset.enterMode = this.autoEnter ? 'automatic' : 'manual'",
-  'if (requestAudio) void this.audio.unlock()',
+  'if (requestAudio) this.requestAudioUnlock()',
   'this.startSequence(event.isTrusted)',
   "this.phase === 'impact' || this.phase === 'transitioning'",
   "if (document.visibilityState !== 'visible' || this.phase !== 'awaiting-gesture') return",
@@ -171,6 +174,9 @@ for (const behavior of [
 ]) {
   assertIncludes(devicePolicy, behavior, 'Touch-device Enter policy');
 }
+for (const behavior of ['classifyIntroVisit', 'internalHandoff', 'historyRestoreWasNotRestored']) {
+  assertIncludes(visitPolicy, behavior, 'Tab visit policy');
+}
 for (const phase of ['awaiting-gesture', 'lighting', 'typing', 'settling', 'enter-armed', 'impact', 'transitioning', 'entered']) {
   assertIncludes(introController, `'${phase}'`, 'Intro phase state machine');
 }
@@ -189,10 +195,12 @@ for (const behavior of [
   'Promise.allSettled',
   'playbackRate.value',
   'const maxVoices = 6',
-  'const resumeTimeoutMs = 250',
-  "if (context?.state === 'running' && buffers.size > 0) return true",
+  'const resumeTimeoutMs = 800',
+  'prepare: () => Promise<boolean>',
+  'Promise.all([',
+  "if (context?.state === 'running' && buffers.size > 0)",
   'resumeAudioContext(activeContext, resumeTimeoutMs)',
-  'if (unlockPromise === attempt) unlockPromise = undefined',
+  'A trusted gesture may have resumed the shared context',
   "localStorage.getItem(soundPreferenceKey) === 'muted'",
   'localStorage.setItem(soundPreferenceKey',
   'toggleMuted',
@@ -225,7 +233,7 @@ for (const rendering of [
   '--kb-hue',
   'prefers-reduced-motion: reduce',
   "[data-keyboard-intro][data-phase='enter-armed']",
-  '.intro-sound-toggle[aria-pressed=',
+  "[data-audio-state='ready']",
 ]) {
   assertIncludes(keyboardStyles, rendering, 'Keyboard rendering strategy');
 }
@@ -259,8 +267,10 @@ if (!baseLayout.includes("classList.add('js')") || !homeStyles.includes("html.js
 }
 assertIncludes(baseLayout, "root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered'", 'Pre-paint hero intro state');
 assertIncludes(baseLayout, "sessionStorage.getItem(introKey) === 'seen'", 'Per-tab first-visit initialization');
+assertIncludes(baseLayout, "`${introKey}:handoff`", 'Internal navigation handoff');
+assertIncludes(baseLayout, "navigationType === 'back_forward'", 'Restored-tab navigation heuristic');
 assertIncludes(baseLayout, "if (root.dataset.introMode !== 'design' && introKey) sessionStorage.setItem(introKey, 'seen')", 'Explicit intro-skip persistence');
-assertIncludes(baseLayout, "introSeen || skipIntro ? 'returning' : 'first'", 'Per-tab first-visit decision');
+assertIncludes(baseLayout, "root.dataset.introVisit = introVisit", 'Per-tab first-visit decision');
 assertIncludes(site, "introSessionKey = 'aaditya-portfolio-intro-v2'", 'Versioned intro session key');
 
 if (indexPage.includes('id="work"') || indexPage.includes('id="about"') || indexPage.includes('id="contact"')) {

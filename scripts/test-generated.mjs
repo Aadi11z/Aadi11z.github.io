@@ -133,8 +133,8 @@ if (
   introButtons.length !== 1
   || !introButtons[0].includes('class="intro-sound-toggle"')
   || !introButtons[0].includes('data-sound-toggle')
-  || !introButtons[0].includes('aria-label="Keyboard sound"')
-  || !introButtons[0].includes('aria-pressed="true"')
+  || !introButtons[0].includes('aria-label="Enable keyboard sound"')
+  || !introButtons[0].includes('aria-pressed="false"')
 ) {
   throw new Error('Keyboard intro must contain only the compact sound toggle button.');
 }

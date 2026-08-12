@@ -230,6 +230,24 @@
   overflow: visible;
 }
 
+.intro-sound-toggle::after {
+  position: absolute;
+  right: calc(100% + .55rem);
+  width: max-content;
+  color: currentColor;
+  content: attr(data-action-label);
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .08em;
+  opacity: .86;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.intro-sound-toggle[data-action-label='']::after {
+  display: none;
+}
+
 .intro-sound-speaker {
   fill: currentColor;
 }
@@ -243,13 +261,20 @@
   transition: opacity 120ms ease;
 }
 
-.intro-sound-muted,
-.intro-sound-toggle[aria-pressed='false'] .intro-sound-wave {
+.intro-sound-wave,
+.intro-sound-muted {
   opacity: 0;
 }
 
-.intro-sound-toggle[aria-pressed='false'] .intro-sound-muted {
+.keyboard-intro[data-audio-state='ready'] .intro-sound-wave,
+.keyboard-intro[data-audio-state='muted'] .intro-sound-muted {
   opacity: 1;
+}
+
+.keyboard-intro[data-audio-state='blocked'] .intro-sound-toggle,
+.keyboard-intro[data-audio-state='error'] .intro-sound-toggle {
+  border-color: rgb(244 184 96 / 48%);
+  color: rgb(255 213 148 / 88%);
 }
 
 [data-keyboard-intro][data-phase='enter-armed'] {

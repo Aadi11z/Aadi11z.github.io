@@ -137,6 +137,7 @@ class KeyboardIntroRuntime {
 
     this.addListeners();
     this.updateSoundControl();
+    void this.audio.prepare().then(() => this.updateSoundControl());
     if (this.isDesignMode) {
       this.intro.dataset.designMode = 'true';
       this.installDebugApi();
@@ -166,6 +167,7 @@ class KeyboardIntroRuntime {
     document.addEventListener('keydown', this.handleKeyDown, options);
     document.addEventListener('visibilitychange', this.handleVisibilityChange, options);
     window.addEventListener('pagehide', this.handlePageHide, options);
+    window.addEventListener('pageshow', this.handlePageShow, options);
     this.reducedMotion.addEventListener('change', this.handleReducedMotionChange, options);
   }
 
@@ -179,7 +181,7 @@ class KeyboardIntroRuntime {
       if (event.isTrusted) void this.unlockThenPressEnter(true);
       else this.pressEnter(true);
     } else if (event.isTrusted && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')) {
-      void this.audio.unlock();
+      this.requestAudioUnlock();
     }
   };
 
@@ -189,9 +191,10 @@ class KeyboardIntroRuntime {
   };
 
   private readonly handleSoundClick = (event: MouseEvent): void => {
-    const muted = this.audio.toggleMuted();
+    if (this.audio.state === 'ready') this.audio.toggleMuted();
+    else if (this.audio.muted) this.audio.toggleMuted();
     this.updateSoundControl();
-    if (!muted && event.isTrusted) void this.audio.unlock();
+    if (!this.audio.muted && event.isTrusted) this.requestAudioUnlock();
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -213,7 +216,7 @@ class KeyboardIntroRuntime {
         if (event.isTrusted) void this.unlockThenPressEnter(true);
         else this.pressEnter(true);
       } else if (event.isTrusted && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')) {
-        void this.audio.unlock();
+        this.requestAudioUnlock();
       }
       return;
     }
@@ -236,7 +239,7 @@ class KeyboardIntroRuntime {
       && event.isTrusted
       && (this.phase === 'lighting' || this.phase === 'typing' || this.phase === 'settling')
     ) {
-      void this.audio.unlock();
+      this.requestAudioUnlock();
     }
   };
 
@@ -279,7 +282,18 @@ class KeyboardIntroRuntime {
   };
 
   private readonly handlePageHide = (): void => {
-    if (!this.completed) this.finishEntered(false, true);
+    if (this.completed) return;
+    this.cancelRun();
+    this.keyboard.releaseAll('physical');
+    this.output.textContent = '';
+    this.setPhase('awaiting-gesture');
+  };
+
+  private readonly handlePageShow = (event: PageTransitionEvent): void => {
+    if (this.completed || !event.persisted || this.phase !== 'awaiting-gesture') return;
+    this.setGateState('active');
+    this.setStatus('Keyboard intro restored. Starting automatically.');
+    if (document.visibilityState === 'visible') this.scheduleAutomaticStart();
   };
 
   private readonly handleReducedMotionChange = (event: MediaQueryListEvent): void => {
@@ -298,7 +312,7 @@ class KeyboardIntroRuntime {
     // Audio initialization never blocks the visual timeline. Browsers that
     // allow autoplay can play from the first key; a later trusted gesture can
     // retry the same engine when autoplay is denied.
-    if (requestAudio) void this.audio.unlock();
+    if (requestAudio) this.requestAudioUnlock();
     void this.playSequence(controller);
   }
 
@@ -381,6 +395,7 @@ class KeyboardIntroRuntime {
     } finally {
       if (timeoutId !== undefined) window.clearTimeout(timeoutId);
       this.enterUnlockPending = false;
+      this.updateSoundControl();
     }
     this.pressEnter(focusHeading);
   }
@@ -584,9 +599,23 @@ class KeyboardIntroRuntime {
   private updateSoundControl(): void {
     if (!this.soundToggle) return;
     const enabled = !this.audio.muted;
-    const action = enabled ? 'Mute keyboard sound' : 'Enable keyboard sound';
-    this.soundToggle.setAttribute('aria-pressed', String(enabled));
+    const state = this.audio.state;
+    const action = state === 'error'
+      ? 'Retry keyboard sound'
+      : enabled && state === 'ready'
+        ? 'Mute keyboard sound'
+        : 'Enable keyboard sound';
+    this.intro.dataset.audioState = state;
+    this.soundToggle.dataset.actionLabel = enabled && state !== 'ready'
+      ? 'Enable sound'
+      : '';
+    this.soundToggle.setAttribute('aria-label', action);
+    this.soundToggle.setAttribute('aria-pressed', String(enabled && state === 'ready'));
     this.soundToggle.title = action;
+  }
+
+  private requestAudioUnlock(): void {
+    void this.audio.unlock().then(() => this.updateSoundControl());
   }
 
   private installDebugApi(): void {

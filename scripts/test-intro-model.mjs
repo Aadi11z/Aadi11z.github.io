@@ -3,6 +3,7 @@ import { KEYBOARD_BOUNDS, KEYBOARD_LAYOUT, KEYBOARD_NEIGHBORS } from '../src/dat
 import { INTRO_NAME, INTRO_SEQUENCE, INTRO_TIMING } from '../src/data/intro-sequence.ts';
 import { profile } from '../src/data/profile.ts';
 import { shouldAutoEnterIntro } from '../src/scripts/intro/device-policy.ts';
+import { classifyIntroVisit } from '../src/scripts/intro/visit-policy.ts';
 
 assert.equal(KEYBOARD_LAYOUT.length, 67, 'The compact keyboard must contain exactly 67 physical keys.');
 assert.equal(KEYBOARD_BOUNDS.keyCount, 67, 'Keyboard bounds must expose the physical key count.');
@@ -131,5 +132,23 @@ assert.equal(shouldAutoEnterIntro({
   coarsePrimaryPointer: false,
   anyHoverAvailable: false,
 }), false, 'Unknown pointer capability must not assume touch-only behavior.');
+
+const visit = (overrides = {}) => classifyIntroVisit({
+  designMode: false,
+  seen: true,
+  explicitSkip: false,
+  deepLink: false,
+  internalHandoff: false,
+  navigationType: 'navigate',
+  historyRestoreWasNotRestored: false,
+  ...overrides,
+});
+assert.equal(visit({ seen: false }), 'first', 'A fresh tab must play the intro.');
+assert.equal(visit({ navigationType: 'reload' }), 'returning', 'A refresh must not replay the intro.');
+assert.equal(visit({ internalHandoff: true }), 'returning', 'Known same-tab navigation must not replay the intro.');
+assert.equal(visit({ navigationType: 'back_forward', historyRestoreWasNotRestored: true }), 'returning', 'Ordinary non-BFCache history traversal must not replay.');
+assert.equal(visit({ navigationType: 'back_forward', historyRestoreWasNotRestored: false }), 'first', 'A browser-restored page session should replay when distinguishable.');
+assert.equal(visit({ explicitSkip: true }), 'returning', 'Explicit skip must override replay signals.');
+assert.equal(visit({ designMode: true }), 'first', 'Design mode must always expose the intro.');
 
 console.log(`Intro model checks passed: ${KEYBOARD_LAYOUT.length} unique keys across ${KEYBOARD_BOUNDS.rowCount} rows and ${INTRO_SEQUENCE.length} synchronized typing events verified.`);

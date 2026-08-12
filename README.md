@@ -34,12 +34,12 @@ npm run dev:design
 
 `npm run build` always defaults to normal production mode. Restart the development server when switching modes.
 
-Normal mode records a completed or skipped intro under `aaditya-portfolio-intro-v2` in browser `sessionStorage`. This makes playback specific to the tab's session context: navigation and refreshes in that tab skip it, while an independently opened tab starts a new lifecycle. Browsers may clone session storage into duplicated tabs or tabs opened with an opener. The pre-paint gate reads the value before rendering, so returning visitors do not see a flash of the intro. Design mode ignores and does not update the session value.
+Normal mode records a completed or skipped intro under `aaditya-portfolio-intro-v2` in browser `sessionStorage`. A pre-paint visit policy keeps refreshes, known internal navigation, and ordinary history traversal skipped, while fresh tabs and browser-restored top-level loads replay when the browser exposes enough navigation information. Chrome can restore a closed tab's original session-storage namespace, and browsers do not expose a definitive "reopened closed tab" signal, so restoration detection is deliberately best-effort. Design mode ignores and does not update the session value.
 
 The intro never traps access to the portfolio and has no visible control bar:
 
 - Escape and `?intro=skip` immediately leave the scene in a valid Overview state. A focus-only skip link provides the same path for keyboard and assistive-technology users.
-- Visual typing and a non-blocking Web Audio initialization attempt both start automatically. Browsers that allow audible autoplay can play clicks from the first key. If autoplay is denied, the animation continues silently and the first scene click, letter-key, Enter, or sound-toggle gesture retries audio without restarting the sequence.
+- Visual typing, sample preparation, and a non-blocking Web Audio initialization attempt start automatically. Browsers that allow audible autoplay can play clicks from the first key. If autoplay is denied, the animation continues silently, the sound control exposes the blocked state, and the first scene click, letter-key, Enter, or sound-control gesture retries audio without restarting the sequence. Audible zero-interaction playback cannot be guaranteed by site code under browser autoplay policies.
 - A compact corner speaker icon toggles sound without gating the animation and preserves the visitor's preference in `localStorage`.
 - Development fetches keyboard audio with `no-store`, so regenerated samples cannot be replaced by stale localhost cache entries. Production keeps long-lived caching because every emitted audio URL is content-hashed.
 - With `prefers-reduced-motion: reduce`, the final name is shown immediately, key/glow movement is minimized, and the visitor can press Enter or skip without watching the typing sequence.
@@ -117,6 +117,7 @@ Explorer observations require an explicit provenance value. Missing experiment r
 - `src/scripts/intro/keyboard-controller.ts` — independently addressable physical/script/debug key mechanics, neighbor spill, and cleanup
 - `src/scripts/intro/intro-controller.ts` — cancellable intro state machine, text synchronization, session handling, reduced motion, skip behavior, and transition completion
 - `src/scripts/intro/device-policy.ts` — snapshot of pointer/hover capability deciding whether final Enter waits for input or continues automatically
+- `src/scripts/intro/visit-policy.ts` — documented visit-state policy for refreshes, internal navigation, history traversal, and best-effort restored-tab replay
 - `src/scripts/intro/audio-engine.ts` — opportunistic, retryable Web Audio decoding, four normal-key variations, distinct Space/Enter playback, voice limiting, persisted mute preference, and environment-aware asset caching
 - `src/styles/keyboard-intro.css` — CSS 3D chassis and keycaps, static ambient gradients, local RGB pulses, responsive scaling, and reduced-motion states
 - `src/assets/audio/keyboard/` — six compact adapted keyboard samples and detailed source, license, checksum, and cut provenance

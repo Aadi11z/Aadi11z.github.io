@@ -75,10 +75,16 @@ const personSchema = {
         root.classList.add('js');
         let savedTheme = null;
         let introSeen = false;
+        let internalHandoff = false;
         try {
           savedTheme = localStorage.getItem('theme');
           const introKey = root.dataset.introSessionKey;
           introSeen = introKey ? sessionStorage.getItem(introKey) === 'seen' : false;
+          const handoffKey = introKey ? `${introKey}:handoff` : '';
+          const handoff = handoffKey ? JSON.parse(sessionStorage.getItem(handoffKey) || 'null') : null;
+          const currentTarget = `${location.pathname}${location.search}${location.hash}`;
+          internalHandoff = Boolean(handoff && handoff.target === currentTarget && Date.now() - handoff.at < 15_000);
+          if (handoffKey) sessionStorage.removeItem(handoffKey);
         } catch { /* Storage may be disabled. */ }
 
         const theme = savedTheme === 'dark' || savedTheme === 'light'
@@ -87,11 +93,19 @@ const personSchema = {
         const requestedSection = decodeURIComponent(window.location.hash.slice(1));
         const currentUrl = new URL(window.location.href);
         const explicitSkip = currentUrl.searchParams.get('intro') === 'skip';
-        const skipIntro = root.dataset.introMode !== 'design' && (explicitSkip || (requestedSection && requestedSection !== 'overview'));
+        const deepLink = Boolean(requestedSection && requestedSection !== 'overview');
+        const navigation = performance.getEntriesByType('navigation')[0];
+        const navigationType = navigation && 'type' in navigation ? navigation.type : 'unknown';
+        const historyRestoreWasNotRestored = navigationType === 'back_forward'
+          && 'notRestoredReasons' in navigation
+          && navigation.notRestoredReasons !== null;
+        const designMode = root.dataset.introMode === 'design';
+        let introVisit = 'returning';
+        if (designMode || (!introSeen && !explicitSkip && !deepLink)) introVisit = 'first';
+        else if (!explicitSkip && !deepLink && !internalHandoff && navigationType === 'navigate') introVisit = 'first';
+        else if (!explicitSkip && !deepLink && !internalHandoff && navigationType === 'back_forward' && !historyRestoreWasNotRestored) introVisit = 'first';
         root.dataset.theme = theme;
-        root.dataset.introVisit = root.dataset.introMode === 'design'
-          ? 'first'
-          : (introSeen || skipIntro ? 'returning' : 'first');
+        root.dataset.introVisit = introVisit;
         root.dataset.heroIntroState = root.dataset.introVisit === 'first' ? 'active' : 'entered';
         document.querySelector('[data-theme-color]')?.setAttribute('content', theme === 'dark' ? '#05080e' : '#efe8d1');
         if (explicitSkip) {
@@ -112,6 +126,24 @@ const personSchema = {
       <slot />
     </main>
     <Footer />
+    <script is:inline>
+      document.addEventListener('click', (event) => {
+        if (!(event instanceof MouseEvent) || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+        const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+        if (!(link instanceof HTMLAnchorElement) || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+        const target = new URL(link.href, location.href);
+        if (target.origin !== location.origin) return;
+        if (target.pathname === location.pathname && target.search === location.search) return;
+        try {
+          const introKey = document.documentElement.dataset.introSessionKey;
+          if (!introKey) return;
+          sessionStorage.setItem(`${introKey}:handoff`, JSON.stringify({
+            target: `${target.pathname}${target.search}${target.hash}`,
+            at: Date.now(),
+          }));
+        } catch { /* Storage may be disabled. */ }
+      });
+    </script>
     <script>
       import '@/scripts/effects';
     </script>
